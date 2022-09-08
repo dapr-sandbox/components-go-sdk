@@ -253,7 +253,7 @@ func toTransactionalStateOperation(op *proto.TransactionalStateOperation) contri
 	}
 }
 
-func (s *store) Multi(_ context.Context, req *proto.TransactionalStateRequest) (*proto.TransactionalStateResponse, error) {
+func (s *store) Transact(_ context.Context, req *proto.TransactionalStateRequest) (*proto.TransactionalStateResponse, error) {
 	if s.transactional == nil {
 		return &proto.TransactionalStateResponse{}, status.Errorf(codes.Unimplemented, "method Multi not implemented")
 	}

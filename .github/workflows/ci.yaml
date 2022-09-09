@@ -64,7 +64,7 @@ jobs:
         shell: bash
         run: docker run -d -v /tmp:/tmp -p 6379:6379 -e REDIS_REPLICATION_MODE=master redislabs/rejson:2.0.6
 
-      - name: Run Redis component
+      - name: Run component
         shell: bash
         run: |
           DAPR_COMPONENT_SOCKET_PATH=/tmp/socket.sock go run examples/${{ matrix.component }}/main.go &

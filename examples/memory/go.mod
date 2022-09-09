@@ -9,7 +9,7 @@ require (
 )
 
 require (
-	github.com/dapr/dapr v0.0.0-00010101000000-000000000000 // indirect
+	github.com/dapr/dapr v1.8.4-0.20220909163359-efaca389cc32 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
@@ -23,7 +23,5 @@ require (
 	google.golang.org/grpc v1.47.0 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 )
-
-replace github.com/dapr/dapr => github.com/mcandeia/dapr v0.0.0-20220908131426-74f653eed9cb
 
 replace github.com/dapr-sandbox/components-go-sdk => ../../.

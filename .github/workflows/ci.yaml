@@ -48,6 +48,10 @@ jobs:
           - component: memory
             dependencies: []
             type: state
+            operations: |
+              - get
+              - set
+              - etag
 
     runs-on: ubuntu-latest
     steps:
@@ -60,7 +64,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Run Redis Container
-        if: contains(${{ matrix.dependencies }}, 'redis')
+        if: contains(matrix.dependencies, 'redis')
         shell: bash
         run: docker run -d -v /tmp:/tmp -p 6379:6379 -e REDIS_REPLICATION_MODE=master redislabs/rejson:2.0.6
 
@@ -71,7 +75,7 @@ jobs:
           until [ -S /tmp/socket.sock ]
           do
               sleep 5
-              echo "waiting until component is ready"
+              echo ">>> waiting for socket creation... sleeping"
           done
 
       - name: Conformance Tests

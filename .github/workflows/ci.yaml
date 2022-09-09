@@ -23,6 +23,32 @@ on:
 
 jobs:
   test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - component: redis
+            type: state
+            dependencies: [redis]
+            metadata: |
+              redisHost: localhost:6379
+              redisPassword: ""
+              queryIndexes: |
+                [
+                  {
+                    "name": "qIndx",
+                    "indexes": [
+                      {
+                        "key": "message",
+                        "type": "TEXT"
+                      }
+                    ]
+                  }
+                ]
+          - component: memory
+            dependencies: []
+            type: state
+
     runs-on: ubuntu-latest
     steps:
       - name: setup go
@@ -32,14 +58,16 @@ jobs:
 
       - name: Check out code
         uses: actions/checkout@v3
-      - name: Run Redis docker
+
+      - name: Run Redis Container
+        if: contains(${{ matrix.dependencies }}, 'redis')
         shell: bash
         run: docker run -d -v /tmp:/tmp -p 6379:6379 -e REDIS_REPLICATION_MODE=master redislabs/rejson:2.0.6
 
       - name: Run Redis component
         shell: bash
         run: |
-          DAPR_COMPONENT_SOCKET_PATH=/tmp/socket.sock go run examples/redis/main.go &
+          DAPR_COMPONENT_SOCKET_PATH=/tmp/socket.sock go run examples/${{ matrix.component }}/main.go &
           until [ -S /tmp/socket.sock ]
           do
               sleep 5
@@ -50,30 +78,6 @@ jobs:
         uses: mcandeia/action-dapr-conformance-tests@v1
         with:
           socket: /tmp/socket.sock
-          type: state
-          metadata: |
-            redisHost: localhost:6379
-            redisPassword: ""
-            queryIndexes: |
-              [
-                {
-                  "name": "qIndx",
-                  "indexes": [
-                    {
-                      "key": "message",
-                      "type": "TEXT"
-                    }
-                  ]
-                }
-              ]
-
-          operations: |
-            - set
-            - get
-            - transaction
-            - etag
-            - delete
-            - bulkset
-            - bulkdelete
-            - first-write
-            - query
+          type: ${{ matrix.type }}
+          metadata: ${{ matrix.metadata }}
+          operations: ${{ matrix.operations }}

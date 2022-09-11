@@ -56,11 +56,11 @@ jobs:
               - set
               - etag
           - component: Redis Docker
-            dependencies: [redis]
+            dependencies: []
             type: state
-            cmd: docker run -d -it --env DAPR_COMPONENT_SOCKET_PATH=/tmp/socket.sock -v /tmp:/tmp ghcr.io/mcandeia/redis-pluggable-component:latest
+            cmd: docker-compose -f ./.github/infrastructure/docker-compose-redis.yaml -p redis up -d
             metadata: |
-              redisHost: localhost:6379
+              redisHost: redis:6379
               redisPassword: ""
               queryIndexes: |
                 [
@@ -88,7 +88,7 @@ jobs:
       - name: Run Redis Container
         if: contains(matrix.dependencies, 'redis')
         shell: bash
-        run: docker run -d -v /tmp:/tmp -p 6379:6379 -e REDIS_REPLICATION_MODE=master redislabs/rejson:2.0.6
+        run: docker run -d -p 6379:6379 -e REDIS_REPLICATION_MODE=master redislabs/rejson:2.0.6
 
       - name: Run ${{matrix.component}} component
         shell: bash

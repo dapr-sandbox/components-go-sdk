@@ -1,0 +1,14 @@
+version: '3.9'
+services:
+  component:
+    container_name: dapr-redis-pluggable-component
+    image: "ghcr.io/mcandeia/redis-pluggable-component:latest"
+    environment:
+      - DAPR_COMPONENT_SOCKET_PATH=/tmp/socket.sock
+    volumes:
+      - /tmp:/tmp
+  redis:
+    image: 'redislabs/redisearch:latest'
+    ports:
+      - '6379:6379'
+    command: redis-server

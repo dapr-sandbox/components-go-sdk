@@ -1,0 +1,28 @@
+version: '3.9'
+services:
+  component:
+    container_name: dapr-pluggable-component-redis
+    image: "ghcr.io/mcandeia/redis-pluggable-component:0.1.0-alpha-linux-amd64"
+    environment:
+      - DAPR_COMPONENT_SOCKET_PATH=/var/run/dapr-state.store-v1-default.sock
+    volumes:
+      - socket:/var/run
+  redis:
+    image: 'redislabs/redisearch:latest'
+    ports:
+      - '6379:6379'
+    command: redis-server
+  daprd:
+    container_name: daprd-pluggable-component
+    image: "ghcr.io/mcandeia/daprd:1.9.0-pluggable-components-alpha.4-linux-amd64"
+    command: "./daprd --log-level=debug --app-id pluggable-test --components-path=/components"
+    depends_on:
+      - component
+      - redis
+    ports:
+      - "3500:3500"
+    volumes:
+      - socket:/var/run
+      - ./examples/components:/components
+volumes:
+  socket:

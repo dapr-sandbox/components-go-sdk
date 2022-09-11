@@ -8,7 +8,8 @@ services:
     volumes:
       - /tmp:/tmp
   redis:
-    image: 'redislabs/redisearch:latest'
+    image: redislabs/rejson:2.0.6
     ports:
-      - '6379:6379'
-    command: redis-server
+      - "6379:6379"
+    environment:
+      - REDIS_REPLICATION_MODE=master

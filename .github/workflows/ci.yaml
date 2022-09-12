@@ -14,6 +14,7 @@
 name: conformance-test
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -23,6 +24,57 @@ on:
 
 jobs:
   test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - component: redis
+            type: state
+            cmd: DAPR_COMPONENT_SOCKET_PATH=/tmp/socket.sock go run examples/redis/main.go &
+            dependencies: [redis]
+            metadata: |
+              redisHost: localhost:6379
+              redisPassword: ""
+              queryIndexes: |
+                [
+                  {
+                    "name": "qIndx",
+                    "indexes": [
+                      {
+                        "key": "message",
+                        "type": "TEXT"
+                      }
+                    ]
+                  }
+                ]
+          - component: memory
+            dependencies: []
+            cmd: DAPR_COMPONENT_SOCKET_PATH=/tmp/socket.sock go run examples/memory/main.go &
+            type: state
+            operations: |
+              - get
+              - set
+              - etag
+          - component: Redis Docker
+            dependencies: []
+            type: state
+            cmd: docker-compose -f ./.github/infrastructure/docker-compose-redis.yaml -p redis up -d
+            metadata: |
+              redisHost: redis:6379
+              redisPassword: ""
+              queryIndexes: |
+                [
+                  {
+                    "name": "qIndx",
+                    "indexes": [
+                      {
+                        "key": "message",
+                        "type": "TEXT"
+                      }
+                    ]
+                  }
+                ]
+
     runs-on: ubuntu-latest
     steps:
       - name: setup go
@@ -32,48 +84,29 @@ jobs:
 
       - name: Check out code
         uses: actions/checkout@v3
-      - name: Run Redis docker
-        shell: bash
-        run: docker run -d -v /tmp:/tmp -p 6379:6379 -e REDIS_REPLICATION_MODE=master redislabs/rejson:2.0.6
 
-      - name: Run Redis component
+      - name: Run Redis Container
+        if: contains(matrix.dependencies, 'redis')
+        shell: bash
+        run: docker run -d -p 6379:6379 -e REDIS_REPLICATION_MODE=master redislabs/rejson:2.0.6
+
+      - name: Run ${{matrix.component}} component
+        shell: bash
+        run: ${{ matrix.cmd }}
+
+      - name: Wait for socket
         shell: bash
         run: |
-          DAPR_COMPONENT_SOCKET_PATH=/tmp/socket.sock go run examples/redis/main.go &
           until [ -S /tmp/socket.sock ]
           do
               sleep 5
-              echo "waiting until component is ready"
+              echo ">>> waiting for socket creation... sleeping"
           done
 
       - name: Conformance Tests
         uses: mcandeia/action-dapr-conformance-tests@v1
         with:
           socket: /tmp/socket.sock
-          type: state
-          metadata: |
-            redisHost: localhost:6379
-            redisPassword: ""
-            queryIndexes: |
-              [
-                {
-                  "name": "qIndx",
-                  "indexes": [
-                    {
-                      "key": "message",
-                      "type": "TEXT"
-                    }
-                  ]
-                }
-              ]
-
-          operations: |
-            - set
-            - get
-            - transaction
-            - etag
-            - delete
-            - bulkset
-            - bulkdelete
-            - first-write
-            - query
+          type: ${{ matrix.type }}
+          metadata: ${{ matrix.metadata }}
+          operations: ${{ matrix.operations }}

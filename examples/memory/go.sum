@@ -14,6 +14,8 @@ github.com/cncf/xds/go v0.0.0-20211001041855-01bcc9b48dfe/go.mod h1:eXthEFrGJvWH
 github.com/cncf/xds/go v0.0.0-20211011173535-cb28da3451f1/go.mod h1:eXthEFrGJvWHgFFCl3hGmgk+/aYT6PnTQLykKQRLhEs=
 github.com/dapr/components-contrib v1.8.0-rc.1.0.20220901165827-19341e5a0ff4 h1:dtp6v5a9viHQSQfrfSaumAoSBMAbsqPrHdoHIxcPAJ4=
 github.com/dapr/components-contrib v1.8.0-rc.1.0.20220901165827-19341e5a0ff4/go.mod h1:zllmwB5vkb108A+XU9437LhH48/OICqYcN4r+FQum2k=
+github.com/dapr/dapr v1.8.4-0.20220909163359-efaca389cc32 h1:GEwxdaIwu97SFANaxXP4AfIFMLfJF+4wY7cea1mmqRk=
+github.com/dapr/dapr v1.8.4-0.20220909163359-efaca389cc32/go.mod h1:id6jlg9wW4fuvsCnJMqPKllBZFpb6Baqn0CbnDrEbPg=
 github.com/dapr/kit v0.0.2 h1:VNg6RWrBMOdtY0/ZLztyAa/RjyFLaskdO9wt2HIREwk=
 github.com/dapr/kit v0.0.2/go.mod h1:Q4TWm9+vcPZFGehaJUZt2hvA805wJm7FIuoArytWJ8o=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -56,8 +58,6 @@ github.com/google/uuid v1.1.2/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+
 github.com/grpc-ecosystem/grpc-gateway v1.16.0/go.mod h1:BDjrQk3hbvj6Nolgz8mAMFbcEtjT1g+wF4CSlocrBnw=
 github.com/json-iterator/go v1.1.12 h1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnrnM=
 github.com/json-iterator/go v1.1.12/go.mod h1:e30LSqwooZae/UwlEbR2852Gd8hjQvJoHmT4TnhNGBo=
-github.com/mcandeia/dapr v0.0.0-20220908131426-74f653eed9cb h1:s+jQU+n9Di4pc3sO0KfELyOTH/Wnd1hH2ycFJo4uDWc=
-github.com/mcandeia/dapr v0.0.0-20220908131426-74f653eed9cb/go.mod h1:id6jlg9wW4fuvsCnJMqPKllBZFpb6Baqn0CbnDrEbPg=
 github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=
 github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd h1:TRLaZ9cD/w8PVh93nsPXa1VrQ6jlwL5oN8l14QlcNfg=
 github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=

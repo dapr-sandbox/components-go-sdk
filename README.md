@@ -4,7 +4,7 @@ This repository is a POC of a SDK for [Dapr gRPC Components (a.k.a pluggable com
 
 ## Running examples
 
-Start by running `./run.sh` inside `/examples` folder. It will start the daprd runtime with pluggable components version + default in memory state store implementation from components-contrib, use `./run.sh redis` to run redis instead.
+Start by running `./run.sh` inside `/examples` folder. It will start the daprd runtime with pluggable components version + default in memory state store implementation from components-contrib, use `./run.sh state.redis` to run redis instead.
 
 > Run `ARGS=--no-cache ./run.sh` if you want to rebuild the docker image.
 

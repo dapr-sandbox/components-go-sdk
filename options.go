@@ -18,6 +18,7 @@ import (
 
 	"github.com/dapr/kit/logger"
 
+	"github.com/dapr-sandbox/components-go-sdk/pubsub/v1"
 	"github.com/dapr-sandbox/components-go-sdk/state/v1"
 	"google.golang.org/grpc"
 )
@@ -39,6 +40,16 @@ func UseStateStore(stateStore state.Store) Option {
 		co.useGrpcServer = append(co.useGrpcServer, func(s *grpc.Server) {
 			svcLogger.Info("dapr state store was registered")
 			state.Register(s, stateStore)
+		})
+	}
+}
+
+// UsePubSub sets the component pubsub implementation.
+func UsePubSub(pbs pubsub.PubSub) Option {
+	return func(co *componentOpts) {
+		co.useGrpcServer = append(co.useGrpcServer, func(s *grpc.Server) {
+			svcLogger.Info("dapr pubsub was registered")
+			pubsub.Register(s, pbs)
 		})
 	}
 }

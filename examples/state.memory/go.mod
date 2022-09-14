@@ -1,8 +1,6 @@
-module github.com/dapr-sandbox/components-go-sdk/examples/redis
+module github.com/dapr-sandbox/components-go-sdk/examples/state.memory
 
 go 1.19
-
-replace github.com/dapr-sandbox/components-go-sdk => ../../.
 
 require (
 	github.com/dapr-sandbox/components-go-sdk v0.0.0-00010101000000-000000000000
@@ -11,14 +9,10 @@ require (
 )
 
 require (
-	github.com/agrea/ptr v0.0.0-20180711073057-77a518d99b7b // indirect
-	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/dapr/dapr v1.8.4-0.20220909163359-efaca389cc32 // indirect
-	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
-	github.com/go-redis/redis/v8 v8.11.5 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/google/uuid v1.3.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/mitchellh/mapstructure v1.5.1-0.20220423185008-bf980b35cac4 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -30,3 +24,7 @@ require (
 	google.golang.org/grpc v1.47.0 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 )
+
+replace github.com/dapr-sandbox/components-go-sdk => ../../.
+
+replace github.com/dapr/dapr => github.com/mcandeia/dapr v0.0.0-20220913221641-0c6b9f5583c7

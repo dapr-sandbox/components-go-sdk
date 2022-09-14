@@ -18,8 +18,6 @@ import (
 	"io"
 	"sync"
 
-	"github.com/google/uuid"
-
 	"github.com/dapr-sandbox/components-go-sdk/internal"
 	contribMetadata "github.com/dapr/components-contrib/metadata"
 	contribPubSub "github.com/dapr/components-contrib/pubsub"
@@ -32,7 +30,7 @@ import (
 var pubsubLogger = logger.NewLogger("dapr-pubsub")
 
 var defaultPubSub = &pubsub{
-	ackManager: acknowledgementManager{
+	ackManager: &acknowledgementManager{
 		pendingAcks: map[string]chan error{},
 		mu:          &sync.RWMutex{},
 	},
@@ -41,7 +39,7 @@ var defaultPubSub = &pubsub{
 type pubsub struct {
 	proto.UnimplementedPubSubServer
 	impl       PubSub
-	ackManager acknowledgementManager
+	ackManager *acknowledgementManager
 }
 
 func (s *pubsub) AckMessage(stream proto.PubSub_AckMessageServer) error {
@@ -97,8 +95,10 @@ func (s *pubsub) Subscribe(req *proto.SubscribeRequest, stream proto.PubSub_Subs
 	return s.impl.Subscribe(stream.Context(), contribPubSub.SubscribeRequest{
 		Topic:    req.Topic,
 		Metadata: req.Metadata,
-	}, func(_ context.Context, msg *contribPubSub.NewMessage) error {
-		msgID := uuid.New().String()
+	}, func(ctx context.Context, msg *contribPubSub.NewMessage) error {
+		msgID, awaiter, dispose := s.ackManager.getAwaiter()
+		defer dispose()
+
 		err := stream.Send(&proto.Message{
 			Id:          msgID,
 			Data:        msg.Data,
@@ -109,7 +109,7 @@ func (s *pubsub) Subscribe(req *proto.SubscribeRequest, stream proto.PubSub_Subs
 		if err != nil {
 			return errors.Wrapf(err, "could not handle the message for topic %s", msg.Topic)
 		}
-		return s.ackManager.wait(msgID)
+		return awaiter(ctx)
 	})
 }
 

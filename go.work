@@ -5,3 +5,5 @@ use ./
 use ./examples/state.memory
 
 use ./examples/state.redis
+
+use ./examples/pubsub.kafka

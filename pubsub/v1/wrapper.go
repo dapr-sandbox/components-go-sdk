@@ -15,19 +15,56 @@ package pubsub
 
 import (
 	"context"
+	"io"
+	"sync"
+
+	"github.com/google/uuid"
 
 	"github.com/dapr-sandbox/components-go-sdk/internal"
 	contribMetadata "github.com/dapr/components-contrib/metadata"
 	contribPubSub "github.com/dapr/components-contrib/pubsub"
 	proto "github.com/dapr/dapr/pkg/proto/components/v1"
+	"github.com/dapr/kit/logger"
+	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 )
 
-var defaultPubSub = &pubsub{}
+var pubsubLogger = logger.NewLogger("dapr-pubsub")
+
+var defaultPubSub = &pubsub{
+	ackManager: acknowledgementManager{
+		pendingAcks: map[string]chan error{},
+		mu:          &sync.RWMutex{},
+	},
+}
 
 type pubsub struct {
 	proto.UnimplementedPubSubServer
-	impl PubSub
+	impl       PubSub
+	ackManager acknowledgementManager
+}
+
+func (s *pubsub) AckMessage(stream proto.PubSub_AckMessageServer) error {
+	for {
+		ack, err := stream.Recv()
+
+		if err == io.EOF {
+			return nil
+		}
+
+		if err != nil {
+			return err
+		}
+		var ackErr error
+
+		if ack.Error != nil {
+			ackErr = errors.New(ack.Error.Message)
+		}
+
+		if err := s.ackManager.ack(ack.MessageId, ackErr); err != nil {
+			pubsubLogger.Errorf("error %v when ack'ing message %s", err, ack.MessageId)
+		}
+	}
 }
 
 func (s *pubsub) Init(_ context.Context, initReq *proto.PubSubInitRequest) (*proto.PubSubInitResponse, error) {
@@ -61,12 +98,18 @@ func (s *pubsub) Subscribe(req *proto.SubscribeRequest, stream proto.PubSub_Subs
 		Topic:    req.Topic,
 		Metadata: req.Metadata,
 	}, func(_ context.Context, msg *contribPubSub.NewMessage) error {
-		return stream.Send(&proto.Message{
+		msgID := uuid.New().String()
+		err := stream.Send(&proto.Message{
+			Id:          msgID,
 			Data:        msg.Data,
 			Topic:       msg.Topic,
 			Metadata:    msg.Metadata,
 			ContentType: internal.ZeroIfNil(msg.ContentType),
 		})
+		if err != nil {
+			return errors.Wrapf(err, "could not handle the message for topic %s", msg.Topic)
+		}
+		return s.ackManager.wait(msgID)
 	})
 }
 

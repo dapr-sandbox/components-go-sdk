@@ -23,13 +23,14 @@ import (
 	"google.golang.org/grpc"
 )
 
+// ErrSocketNotDefined is returned when the env variable `DAPR_COMPONENT_SOCKET_PATH` is not set
 var ErrSocketNotDefined = errors.New("socket env `DAPR_COMPONENT_SOCKET_PATH` must be set")
 
 const (
 	unixSocketPathEnvVar = "DAPR_COMPONENT_SOCKET_PATH"
 )
 
-// Generates a chan bool that automatically gets closed when the process
+// makeAbortChan Generates a chan bool that automatically gets closed when the process
 // receives a SIGINT or SIGTERM.
 func makeAbortChan() chan struct{} {
 	abortChan := make(chan struct{})

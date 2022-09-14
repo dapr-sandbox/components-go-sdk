@@ -37,16 +37,16 @@ jobs:
           - component: pubsub.kafka
             type: pubsub
             cmd: go run examples/pubsub.kafka/main.go &
-            dependencies: [kafka]
+            dependencies: [go, kafka]
             metadata: |
-              brokers: localhost:9095
+              brokers: localhost:9092
               consumerGroup: pubsubgroup1
               authRequired: "false"
               initialOffset: oldest
           - component: state.redis
             type: state
             cmd: go run examples/state.redis/main.go &
-            dependencies: [redis]
+            dependencies: [go, redis]
             metadata: |
               redisHost: localhost:6379
               redisPassword: ""
@@ -85,6 +85,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: setup go
+        if: contains(matrix.dependencies, 'go')
         uses: actions/setup-go@v3
         with:
           go-version: ${{ env.GOVER }}

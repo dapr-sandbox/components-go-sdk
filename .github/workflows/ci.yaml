@@ -39,14 +39,10 @@ jobs:
             cmd: go run examples/pubsub.kafka/main.go &
             dependencies: [kafka]
             metadata: |
-              - name: brokers
-                value: localhost:9095
-              - name: consumerGroup
-                value: pubsubgroup1
-              - name: authRequired
-                value: "false"
-              - name: initialOffset
-                value: oldest
+              brokers: localhost:9095
+              consumerGroup: pubsubgroup1
+              authRequired: "false"
+              initialOffset: oldest
           - component: state.redis
             type: state
             cmd: go run examples/state.redis/main.go &

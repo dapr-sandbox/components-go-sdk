@@ -33,7 +33,7 @@ services:
       - socket:/var/run
   daprd:
     container_name: daprd-pluggable-component
-    image: "ghcr.io/mcandeia/daprd:1.9.0-pluggable-components-alpha.4-linux-amd64"
+    image: "ghcr.io/mcandeia/daprd:1.9.0-pubsub-alpha-linux-amd64"
     command: "./daprd --log-level=debug --app-id pluggable-test --components-path=/components"
     depends_on:
       - component

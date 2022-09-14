@@ -13,6 +13,12 @@
 
 name: conformance-test
 
+env:
+  # Version of Go
+  GOVER: "1.19"
+  # Component socket Path
+  DAPR_COMPONENT_SOCKET_PATH: /tmp/socket.sock
+
 on:
   workflow_dispatch:
   push:
@@ -28,9 +34,21 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - component: pubsub.kafka
+            cmd: go run examples/pubsub.kafka/main.go &
+            dependencies: [kafka]
+            metadata: |
+              - name: brokers
+                value: localhost:9095
+              - name: consumerGroup
+                value: pubsubgroup1
+              - name: authRequired
+                value: "false"
+              - name: initialOffset
+                value: oldest
           - component: state.redis
             type: state
-            cmd: DAPR_COMPONENT_SOCKET_PATH=/tmp/socket.sock go run examples/redis/main.go &
+            cmd: go run examples/state.redis/main.go &
             dependencies: [redis]
             metadata: |
               redisHost: localhost:6379
@@ -47,14 +65,6 @@ jobs:
                     ]
                   }
                 ]
-          - component: state.memory
-            dependencies: []
-            cmd: DAPR_COMPONENT_SOCKET_PATH=/tmp/socket.sock go run examples/memory/main.go &
-            type: state
-            operations: |
-              - get
-              - set
-              - etag
           - component: Redis Docker
             dependencies: []
             type: state
@@ -80,7 +90,7 @@ jobs:
       - name: setup go
         uses: actions/setup-go@v3
         with:
-          go-version: ">=1.19.0"
+          go-version: ${{ env.GOVER }}
 
       - name: Check out code
         uses: actions/checkout@v3
@@ -90,6 +100,11 @@ jobs:
         shell: bash
         run: docker run -d -p 6379:6379 -e REDIS_REPLICATION_MODE=master redislabs/rejson:2.0.6
 
+      - name: Run Kafka Container
+        if: contains(matrix.dependencies, 'kafka')
+        shell: bash
+        run: docker-compose -f ./.github/infrastructure/docker-compose-kafka-only.yaml -p kafka up -d
+
       - name: Run ${{matrix.component}} component
         shell: bash
         run: ${{ matrix.cmd }}
@@ -97,7 +112,7 @@ jobs:
       - name: Wait for socket
         shell: bash
         run: |
-          until [ -S /tmp/socket.sock ]
+          until [ -S ${{ env.DAPR_COMPONENT_SOCKET_PATH }} ]
           do
               sleep 5
               echo ">>> waiting for socket creation... sleeping"
@@ -106,7 +121,7 @@ jobs:
       - name: Conformance Tests
         uses: mcandeia/action-dapr-conformance-tests@v1
         with:
-          socket: /tmp/socket.sock
+          socket: ${{ env.DAPR_COMPONENT_SOCKET_PATH }}
           type: ${{ matrix.type }}
           metadata: ${{ matrix.metadata }}
           operations: ${{ matrix.operations }}

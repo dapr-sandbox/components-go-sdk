@@ -35,6 +35,7 @@ jobs:
       matrix:
         include:
           - component: pubsub.kafka
+            type: pubsub
             cmd: go run examples/pubsub.kafka/main.go &
             dependencies: [kafka]
             metadata: |

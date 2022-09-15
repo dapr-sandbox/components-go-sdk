@@ -16,6 +16,7 @@ package pubsub
 import (
 	"context"
 	"sync"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -23,7 +24,7 @@ import (
 
 var (
 	ErrAckTimeout  = errors.New("ack has timed out")
-	ErrMsgNotFound = errors.New("message not found")
+	ErrMsgNotFound = errors.New("message not found or not specified")
 )
 
 // acknowledgementManager control the messages acknowledgement from the server.
@@ -39,7 +40,7 @@ func (m *acknowledgementManager) getAwaiter() (messageID string, await func(cont
 
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	ackChan := make(chan error, 1)
+	ackChan := make(chan error, 1) // bufferized to avoid blocking on ack.
 	m.pendingAcks[messageID] = ackChan
 
 	awaiter := func(ctx context.Context) error {
@@ -53,8 +54,8 @@ func (m *acknowledgementManager) getAwaiter() (messageID string, await func(cont
 
 	disposer := func() {
 		m.mu.Lock()
-		close(ackChan)
 		delete(m.pendingAcks, messageID)
+		close(ackChan)
 		m.mu.Unlock()
 	}
 
@@ -71,6 +72,13 @@ func (m *acknowledgementManager) ack(messageID string, err error) error {
 		return ErrMsgNotFound
 	}
 
-	c <- err
-	return nil
+	select {
+	// wait time for outstanding acks
+	// if this operation takes longer than 1 second
+	// it probably means that no consumer is waiting for the message ack
+	case <-time.After(time.Second):
+		return nil
+	case c <- err:
+		return nil
+	}
 }

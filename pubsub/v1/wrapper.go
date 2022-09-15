@@ -25,25 +25,60 @@ import (
 	"github.com/dapr/kit/logger"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
-var pubsubLogger = logger.NewLogger("dapr-pubsub")
+var pubsubLogger = logger.NewLogger("pubsub-component")
 
 var defaultPubSub = &pubsub{
-	ackManager: &acknowledgementManager{
-		pendingAcks: map[string]chan error{},
-		mu:          &sync.RWMutex{},
+	subsManager: &subsManager{
+		subscriptions: make(map[string]*subscription),
+		mu:            &sync.RWMutex{},
 	},
 }
 
 type pubsub struct {
 	proto.UnimplementedPubSubServer
-	impl       PubSub
-	ackManager *acknowledgementManager
+	impl        PubSub
+	subsManager *subsManager
 }
 
-func (s *pubsub) AckMessage(stream proto.PubSub_AckMessageServer) error {
+const metadataSubscriptionID = "subscription-id"
+
+var ErrSubscriptionNotFound = status.Errorf(codes.NotFound, "subscription not found or not specified")
+
+func sendLoop(stream proto.PubSub_PullMessagesServer, subscription *subscription) {
+	ctx := stream.Context()
 	for {
+		select {
+		case <-ctx.Done():
+			return
+		case msg, ok := <-subscription.messagesChan:
+			if !ok { // closed chan
+				return
+			}
+
+			err := stream.Send(msg)
+			if err == io.EOF { // no more messages
+				return
+			}
+
+			if err != nil {
+				pubsubLogger.Errorf("error when sending message %s to consumer on topic %s", msg.Id, msg.Topic)
+			}
+		}
+	}
+}
+
+func ackLoop(stream proto.PubSub_PullMessagesServer, subscription *subscription) error {
+	ctx := stream.Context()
+	for {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+
 		ack, err := stream.Recv()
 
 		if err == io.EOF {
@@ -53,16 +88,53 @@ func (s *pubsub) AckMessage(stream proto.PubSub_AckMessageServer) error {
 		if err != nil {
 			return err
 		}
+
 		var ackErr error
 
 		if ack.Error != nil {
 			ackErr = errors.New(ack.Error.Message)
 		}
 
-		if err := s.ackManager.ack(ack.MessageId, ackErr); err != nil {
+		if err := subscription.ackManager.ack(ack.MessageId, ackErr); err != nil {
 			pubsubLogger.Errorf("error %v when ack'ing message %s", err, ack.MessageId)
 		}
 	}
+}
+
+// Establishes a stream with the server, which sends messages down to the
+// client. The client streams acknowledgements back to the server. The server
+// will close the stream and return the status on any error. In case of closed
+// connection, the client should re-establish the stream.
+// The first trailing metadata MUST contain a `subscription-id: X` to select
+// the subscription that should be used for the streaming pull.
+func (s *pubsub) PullMessages(stream proto.PubSub_PullMessagesServer) error {
+	streamCtx := stream.Context()
+	metadata, ok := metadata.FromIncomingContext(streamCtx)
+	if !ok {
+		return ErrSubscriptionNotFound
+	}
+
+	subscriptionIDs := metadata.Get(metadataSubscriptionID)
+	if len(subscriptionIDs) == 0 {
+		return ErrSubscriptionNotFound
+	}
+
+	subscription, ok := s.subsManager.getSubscription(subscriptionIDs[0])
+
+	if !ok || subscription == nil {
+		return ErrSubscriptionNotFound
+	}
+
+	// consume messages goroutine
+	go sendLoop(stream, subscription)
+
+	// ack loop
+	return ackLoop(stream, subscription)
+}
+
+func (s *pubsub) Unsubscribe(_ context.Context, req *proto.UnsubscribeRequest) (*proto.UnsubscribeResponse, error) {
+	s.subsManager.unsubscribe(req.SubscriptionId)
+	return &proto.UnsubscribeResponse{}, nil
 }
 
 func (s *pubsub) Init(_ context.Context, initReq *proto.PubSubInitRequest) (*proto.PubSubInitResponse, error) {
@@ -91,26 +163,14 @@ func (s *pubsub) Publish(_ context.Context, req *proto.PublishRequest) (*proto.P
 	})
 }
 
-func (s *pubsub) Subscribe(req *proto.SubscribeRequest, stream proto.PubSub_SubscribeServer) error {
-	return s.impl.Subscribe(stream.Context(), contribPubSub.SubscribeRequest{
-		Topic:    req.Topic,
-		Metadata: req.Metadata,
-	}, func(ctx context.Context, msg *contribPubSub.NewMessage) error {
-		msgID, awaiter, dispose := s.ackManager.getAwaiter()
-		defer dispose()
-
-		err := stream.Send(&proto.Message{
-			Id:          msgID,
-			Data:        msg.Data,
-			Topic:       msg.Topic,
-			Metadata:    msg.Metadata,
-			ContentType: internal.ZeroIfNil(msg.ContentType),
-		})
-		if err != nil {
-			return errors.Wrapf(err, "could not handle the message for topic %s", msg.Topic)
-		}
-		return awaiter(ctx)
-	})
+func (s *pubsub) Subscribe(ctx context.Context, req *proto.SubscribeRequest) (*proto.SubscribeResponse, error) {
+	id, subscription := s.subsManager.newSubscription()
+	return &proto.SubscribeResponse{
+			SubscriptionId: id,
+		}, s.impl.Subscribe(subscription.ctx, contribPubSub.SubscribeRequest{
+			Topic:    req.Topic,
+			Metadata: req.Metadata,
+		}, subscription.send)
 }
 
 func (s *pubsub) Ping(context.Context, *proto.PingRequest) (*proto.PingResponse, error) {

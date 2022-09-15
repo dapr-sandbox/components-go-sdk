@@ -22,6 +22,7 @@ import (
 	contribPubSub "github.com/dapr/components-contrib/pubsub"
 	proto "github.com/dapr/dapr/pkg/proto/components/v1"
 	"github.com/dapr/kit/logger"
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -33,7 +34,7 @@ var pubsubLogger = logger.NewLogger("pubsub-component")
 
 var defaultPubSub = &pubsub{
 	subsManager: &subsManager{
-		subscriptions: make(map[string]*subscription),
+		subscriptions: make(map[string]*proto.SubscribeRequest),
 		mu:            &sync.RWMutex{},
 	},
 }
@@ -46,12 +47,25 @@ type pubsub struct {
 
 const metadataSubscriptionID = "subscription-id"
 
-var ErrSubscriptionNotFound = status.Errorf(codes.NotFound, "subscription not found or not specified")
+var (
+	ErrAckTimeout           = errors.New("ack has timed out")
+	ErrSubscriptionNotFound = status.Errorf(codes.NotFound, "subscription not found or not specified")
+)
 
-// tryAck send the message downstream to the client and wait for its acknowledgement.
+// tryGetAck send the message downstream to the client and wait for its acknowledgement.
 // if any error occurs in this process an error is also returned.
 // check for io.EOF error to verify if the stream remains opened.
-func tryAck(stream proto.PubSub_PullMessagesServer, msg *proto.Message) error {
+func tryGetAck(stream proto.PubSub_PullMessagesServer, contribMsg *contribPubSub.NewMessage) error {
+	msgID := uuid.New().String()
+
+	msg := &proto.Message{
+		Data:        contribMsg.Data,
+		Topic:       contribMsg.Topic,
+		Metadata:    contribMsg.Metadata,
+		ContentType: internal.ZeroIfNil(contribMsg.ContentType),
+		Id:          msgID,
+	}
+
 	err := stream.Send(msg)
 	if err != nil {
 		return errors.Wrapf(err, "error when sending message %s to consumer on topic %s", msg.Id, msg.Topic)
@@ -65,7 +79,7 @@ func tryAck(stream proto.PubSub_PullMessagesServer, msg *proto.Message) error {
 
 		// id is reserved for future work when parallel ack is supported,
 		// for now we should drop unordered acks if they occurs and get the next message
-		if ack.MessageId != msg.Id {
+		if ack.MessageId != msgID {
 			pubsubLogger.Warnf("message %s is received when waiting for %s", ack.MessageId, msg.Id)
 			continue
 		}
@@ -104,27 +118,24 @@ func (s *pubsub) PullMessages(stream proto.PubSub_PullMessagesServer) error {
 
 	ctx := stream.Context()
 
-	for {
+	return s.impl.Subscribe(ctx, contribPubSub.SubscribeRequest{
+		Topic:    subscription.Topic,
+		Metadata: subscription.Metadata,
+	}, func(ctx context.Context, msg *contribPubSub.NewMessage) error {
+		ackErr := make(chan error, 1)
+
+		go func() {
+			ackErr <- tryGetAck(stream, msg)
+			close(ackErr)
+		}()
+
 		select {
 		case <-ctx.Done():
-			return nil
-		case outstandingMsg, ok := <-subscription.messagesChan:
-			if !ok { // closed chan
-				return nil
-			}
-			select {
-			case <-ctx.Done():
-				return nil
-			case outstandingMsg.ack <- tryAck(stream, outstandingMsg.message):
-				continue
-			}
+			return ErrAckTimeout
+		case err := <-ackErr:
+			return err
 		}
-	}
-}
-
-func (s *pubsub) Unsubscribe(_ context.Context, req *proto.UnsubscribeRequest) (*proto.UnsubscribeResponse, error) {
-	s.subsManager.unsubscribe(req.SubscriptionId)
-	return &proto.UnsubscribeResponse{}, nil
+	})
 }
 
 func (s *pubsub) Init(_ context.Context, initReq *proto.PubSubInitRequest) (*proto.PubSubInitResponse, error) {
@@ -154,13 +165,9 @@ func (s *pubsub) Publish(_ context.Context, req *proto.PublishRequest) (*proto.P
 }
 
 func (s *pubsub) Subscribe(ctx context.Context, req *proto.SubscribeRequest) (*proto.SubscribeResponse, error) {
-	id, subscription := s.subsManager.newSubscription()
 	return &proto.SubscribeResponse{
-			SubscriptionId: id,
-		}, s.impl.Subscribe(subscription.ctx, contribPubSub.SubscribeRequest{
-			Topic:    req.Topic,
-			Metadata: req.Metadata,
-		}, subscription.send)
+		SubscriptionId: s.subsManager.newSubscription(req),
+	}, nil
 }
 
 func (s *pubsub) Ping(context.Context, *proto.PingRequest) (*proto.PingResponse, error) {

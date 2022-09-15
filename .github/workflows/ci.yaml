@@ -34,6 +34,19 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - component: pubsub.redis
+            type: pubsub
+            cmd: go run examples/pubsub.redis/main.go &
+            dependencies: [go, redis]
+            test_config: |
+              checkInOrderProcessing: false
+            metadata: |
+              redisHost: localhost:6379
+              redisPassword: ""
+              consumerID: "testConsumer"
+              processingTimeout: 5s
+              redeliverInterval: 1s
+              concurrency: 1
           - component: pubsub.kafka
             type: pubsub
             cmd: go run examples/pubsub.kafka/main.go &
@@ -123,3 +136,4 @@ jobs:
           type: ${{ matrix.type }}
           metadata: ${{ matrix.metadata }}
           operations: ${{ matrix.operations }}
+          test_config: ${{ matrix.test_config }}

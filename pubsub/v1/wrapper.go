@@ -15,7 +15,6 @@ package pubsub
 
 import (
 	"context"
-	"io"
 	"sync"
 
 	"github.com/dapr-sandbox/components-go-sdk/internal"
@@ -49,55 +48,33 @@ const metadataSubscriptionID = "subscription-id"
 
 var ErrSubscriptionNotFound = status.Errorf(codes.NotFound, "subscription not found or not specified")
 
-func sendLoop(stream proto.PubSub_PullMessagesServer, subscription *subscription) {
-	ctx := stream.Context()
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case msg, ok := <-subscription.messagesChan:
-			if !ok { // closed chan
-				return
-			}
-
-			err := stream.Send(msg)
-			if err == io.EOF { // no more messages
-				return
-			}
-
-			if err != nil {
-				pubsubLogger.Errorf("error when sending message %s to consumer on topic %s", msg.Id, msg.Topic)
-			}
-		}
+// tryAck send the message downstream to the client and wait for its acknowledgement.
+// if any error occurs in this process an error is also returned.
+// check for io.EOF error to verify if the stream remains opened.
+func tryAck(stream proto.PubSub_PullMessagesServer, msg *proto.Message) error {
+	err := stream.Send(msg)
+	if err != nil {
+		return errors.Wrapf(err, "error when sending message %s to consumer on topic %s", msg.Id, msg.Topic)
 	}
-}
 
-func ackLoop(stream proto.PubSub_PullMessagesServer, subscription *subscription) error {
-	ctx := stream.Context()
 	for {
-		if err := ctx.Err(); err != nil {
-			return err
-		}
-
 		ack, err := stream.Recv()
-
-		if err == io.EOF {
-			return nil
-		}
-
 		if err != nil {
-			return err
+			return errors.Wrapf(err, "error when receiving ack for message %s on topic %s", msg.Id, msg.Topic)
 		}
 
-		var ackErr error
+		// id is reserved for future work when parallel ack is supported,
+		// for now we should drop unordered acks if they occurs and get the next message
+		if ack.MessageId != msg.Id {
+			pubsubLogger.Warnf("message %s is received when waiting for %s", ack.MessageId, msg.Id)
+			continue
+		}
 
 		if ack.Error != nil {
-			ackErr = errors.New(ack.Error.Message)
+			return errors.New(ack.Error.Message)
 		}
 
-		if err := subscription.ackManager.ack(ack.MessageId, ackErr); err != nil {
-			pubsubLogger.Errorf("error %v when ack'ing message %s", err, ack.MessageId)
-		}
+		return nil
 	}
 }
 
@@ -125,11 +102,24 @@ func (s *pubsub) PullMessages(stream proto.PubSub_PullMessagesServer) error {
 		return ErrSubscriptionNotFound
 	}
 
-	// consume messages goroutine
-	go sendLoop(stream, subscription)
+	ctx := stream.Context()
 
-	// ack loop
-	return ackLoop(stream, subscription)
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case outstandingMsg, ok := <-subscription.messagesChan:
+			if !ok { // closed chan
+				return nil
+			}
+			select {
+			case <-ctx.Done():
+				return nil
+			case outstandingMsg.ack <- tryAck(stream, outstandingMsg.message):
+				continue
+			}
+		}
+	}
 }
 
 func (s *pubsub) Unsubscribe(_ context.Context, req *proto.UnsubscribeRequest) (*proto.UnsubscribeResponse, error) {

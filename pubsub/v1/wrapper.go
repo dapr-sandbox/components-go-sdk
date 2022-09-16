@@ -22,8 +22,6 @@ import (
 	contribPubSub "github.com/dapr/components-contrib/pubsub"
 	proto "github.com/dapr/dapr/pkg/proto/components/v1"
 	"github.com/dapr/kit/logger"
-	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -48,73 +46,8 @@ type pubsub struct {
 const metadataSubscriptionID = "subscription-id"
 
 var (
-	ErrAckTimeout           = errors.New("ack has timed out")
 	ErrSubscriptionNotFound = status.Errorf(codes.NotFound, "subscription not found or not specified")
 )
-
-// threadSafeStream wraps a grpc stream with locks to permit send and recv in multiples goroutines.
-type threadSafeStream interface {
-	send(*proto.Message) error
-	recv() (*proto.MessageAcknowledgement, error)
-}
-
-type grpcThreadSafeStream struct {
-	recvLock *sync.Mutex
-	sendLock *sync.Mutex
-	stream   proto.PubSub_PullMessagesServer
-}
-
-func (s *grpcThreadSafeStream) send(msg *proto.Message) error {
-	s.sendLock.Lock()
-	defer s.sendLock.Unlock()
-	return s.stream.Send(msg)
-}
-
-func (s *grpcThreadSafeStream) recv() (*proto.MessageAcknowledgement, error) {
-	s.recvLock.Lock()
-	defer s.recvLock.Unlock()
-	return s.stream.Recv()
-}
-
-// tryGetAck send the message downstream to the client and wait for its acknowledgement.
-// if any error occurs in this process an error is also returned.
-// check for io.EOF error to verify if the stream remains opened.
-func tryGetAck(stream threadSafeStream, contribMsg *contribPubSub.NewMessage) error {
-	msgID := uuid.New().String()
-
-	msg := &proto.Message{
-		Data:        contribMsg.Data,
-		Topic:       contribMsg.Topic,
-		Metadata:    contribMsg.Metadata,
-		ContentType: internal.ZeroIfNil(contribMsg.ContentType),
-		Id:          msgID,
-	}
-
-	err := stream.send(msg)
-	if err != nil {
-		return errors.Wrapf(err, "error when sending message %s to consumer on topic %s", msg.Id, msg.Topic)
-	}
-
-	for {
-		ack, err := stream.recv()
-		if err != nil {
-			return errors.Wrapf(err, "error when receiving ack for message %s on topic %s", msg.Id, msg.Topic)
-		}
-
-		// id is reserved for future work when parallel ack is supported,
-		// for now we should drop unordered acks if they occurs and get the next message
-		if ack.MessageId != msgID {
-			pubsubLogger.Warnf("message %s is received when waiting for %s", ack.MessageId, msg.Id)
-			continue
-		}
-
-		if ack.Error != nil {
-			return errors.New(ack.Error.Message)
-		}
-
-		return nil
-	}
-}
 
 // Establishes a stream with the server, which sends messages down to the
 // client. The client streams acknowledgements back to the server. The server
@@ -140,35 +73,10 @@ func (s *pubsub) PullMessages(stream proto.PubSub_PullMessagesServer) error {
 		return ErrSubscriptionNotFound
 	}
 
-	ctx := stream.Context()
-
-	// As per documentation is unsafe to call recv OR send in multiples goroutines
-	// https://github.com/grpc/grpc-go/blob/master/Documentation/concurrency.md#streams
-	// it is safe to call recv and send in different goroutines.
-	tfStream := &grpcThreadSafeStream{
-		stream:   stream,
-		recvLock: &sync.Mutex{},
-		sendLock: &sync.Mutex{},
-	}
-
-	return s.impl.Subscribe(ctx, contribPubSub.SubscribeRequest{
+	return s.impl.Subscribe(streamCtx, contribPubSub.SubscribeRequest{
 		Topic:    subscription.Topic,
 		Metadata: subscription.Metadata,
-	}, func(ctx context.Context, msg *contribPubSub.NewMessage) error {
-		ackErr := make(chan error, 1)
-
-		go func() {
-			ackErr <- tryGetAck(tfStream, msg)
-			close(ackErr)
-		}()
-
-		select {
-		case <-ctx.Done():
-			return ErrAckTimeout
-		case err := <-ackErr:
-			return err
-		}
-	})
+	}, handlerFor(stream))
 }
 
 func (s *pubsub) Init(_ context.Context, initReq *proto.PubSubInitRequest) (*proto.PubSubInitResponse, error) {

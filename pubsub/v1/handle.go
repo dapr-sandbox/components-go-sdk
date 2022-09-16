@@ -56,12 +56,9 @@ func (s *grpcThreadSafeStream) recv() (*proto.PullMessagesRequest, error) {
 }
 
 // ackLoop starts a receive loop for messages ack
-func ackLoop(ctx context.Context, manager *acknowledgementManager, stream threadSafeStream) {
+func ackLoop(cancel context.CancelFunc, manager *acknowledgementManager, stream threadSafeStream) {
+	defer cancel()
 	for {
-		if ctx.Err() != nil {
-			return
-		}
-
 		ack, err := stream.recv()
 		if err == io.EOF {
 			return
@@ -81,14 +78,15 @@ func ackLoop(ctx context.Context, manager *acknowledgementManager, stream thread
 		if ack.AckError != nil {
 			ackError = errors.New(ack.AckError.Message)
 		}
-		manager.ack(ack.AckMessageId, ackError)
+		if err := manager.ack(ack.AckMessageId, ackError); err != nil {
+			pubsubLogger.Warnf("error %v when trying to notify ack", err)
+		}
 	}
 }
 
 // handleFor creates a message handler for the given stream.
 // it starts an ack loop in background as a separate goroutine
-func handlerFor(stream proto.PubSub_PullMessagesServer) (handler func(ctx context.Context, msg *contribPubSub.NewMessage) error) {
-	streamCtx := stream.Context()
+func handlerFor(cancel context.CancelFunc, stream proto.PubSub_PullMessagesServer) (handler func(ctx context.Context, msg *contribPubSub.NewMessage) error) {
 	tfStream := &grpcThreadSafeStream{
 		stream:   stream,
 		recvLock: &sync.Mutex{},
@@ -98,7 +96,7 @@ func handlerFor(stream proto.PubSub_PullMessagesServer) (handler func(ctx contex
 		pendingAcks: map[string]chan error{},
 		mu:          &sync.RWMutex{},
 	}
-	go ackLoop(streamCtx, ackManager, tfStream)
+	go ackLoop(cancel, ackManager, tfStream)
 	return func(ctx context.Context, contribMsg *contribPubSub.NewMessage) error {
 		msgID, pendingAck, cleanup := ackManager.get()
 		defer cleanup()

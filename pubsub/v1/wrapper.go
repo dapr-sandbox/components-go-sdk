@@ -56,12 +56,20 @@ func (s *pubsub) PullMessages(stream proto.PubSub_PullMessagesServer) error {
 	if subscription == nil {
 		return ErrSubscriptionNotSpecified
 	}
-	streamCtx := stream.Context()
+	ctx, cancel := context.WithCancel(stream.Context())
+	defer cancel()
 
-	return s.impl.Subscribe(streamCtx, contribPubSub.SubscribeRequest{
+	err = s.impl.Subscribe(ctx, contribPubSub.SubscribeRequest{
 		Topic:    subscription.Topic,
 		Metadata: subscription.Metadata,
-	}, handlerFor(stream))
+	}, handlerFor(cancel, stream))
+
+	if err != nil {
+		return err
+	}
+
+	<-ctx.Done()
+	return nil
 }
 
 func (s *pubsub) Init(_ context.Context, initReq *proto.PubSubInitRequest) (*proto.PubSubInitResponse, error) {

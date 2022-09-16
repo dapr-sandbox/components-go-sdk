@@ -13,6 +13,19 @@ limitations under the License.
 
 package dapr
 
-import "testing"
+import (
+	"testing"
 
-func TestServiceRun(t *testing.T) {}
+	"github.com/stretchr/testify/assert"
+)
+
+func TestServiceRun(t *testing.T) {
+	t.Run("run should return an error when socket was not specified", func(t *testing.T) {
+		assert.NotNil(t, Run())
+	})
+
+	t.Run("run should return an when no component was specified", func(t *testing.T) {
+		t.Setenv(unixSocketPathEnvVar, "/tmp/fake.sock")
+		assert.NotNil(t, Run())
+	})
+}

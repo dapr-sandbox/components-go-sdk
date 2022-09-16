@@ -52,10 +52,34 @@ var (
 	ErrSubscriptionNotFound = status.Errorf(codes.NotFound, "subscription not found or not specified")
 )
 
+// threadSafeStream wraps a grpc stream with locks to permit send and recv in multiples goroutines.
+type threadSafeStream interface {
+	send(*proto.Message) error
+	recv() (*proto.MessageAcknowledgement, error)
+}
+
+type grpcThreadSafeStream struct {
+	recvLock *sync.Mutex
+	sendLock *sync.Mutex
+	stream   proto.PubSub_PullMessagesServer
+}
+
+func (s *grpcThreadSafeStream) send(msg *proto.Message) error {
+	s.sendLock.Lock()
+	defer s.sendLock.Unlock()
+	return s.stream.Send(msg)
+}
+
+func (s *grpcThreadSafeStream) recv() (*proto.MessageAcknowledgement, error) {
+	s.recvLock.Lock()
+	defer s.recvLock.Unlock()
+	return s.stream.Recv()
+}
+
 // tryGetAck send the message downstream to the client and wait for its acknowledgement.
 // if any error occurs in this process an error is also returned.
 // check for io.EOF error to verify if the stream remains opened.
-func tryGetAck(stream proto.PubSub_PullMessagesServer, contribMsg *contribPubSub.NewMessage) error {
+func tryGetAck(stream threadSafeStream, contribMsg *contribPubSub.NewMessage) error {
 	msgID := uuid.New().String()
 
 	msg := &proto.Message{
@@ -66,13 +90,13 @@ func tryGetAck(stream proto.PubSub_PullMessagesServer, contribMsg *contribPubSub
 		Id:          msgID,
 	}
 
-	err := stream.Send(msg)
+	err := stream.send(msg)
 	if err != nil {
 		return errors.Wrapf(err, "error when sending message %s to consumer on topic %s", msg.Id, msg.Topic)
 	}
 
 	for {
-		ack, err := stream.Recv()
+		ack, err := stream.recv()
 		if err != nil {
 			return errors.Wrapf(err, "error when receiving ack for message %s on topic %s", msg.Id, msg.Topic)
 		}
@@ -118,6 +142,15 @@ func (s *pubsub) PullMessages(stream proto.PubSub_PullMessagesServer) error {
 
 	ctx := stream.Context()
 
+	// As per documentation is unsafe to call recv OR send in multiples goroutines
+	// https://github.com/grpc/grpc-go/blob/master/Documentation/concurrency.md#streams
+	// it is safe to call recv and send in different goroutines.
+	tfStream := &grpcThreadSafeStream{
+		stream:   stream,
+		recvLock: &sync.Mutex{},
+		sendLock: &sync.Mutex{},
+	}
+
 	return s.impl.Subscribe(ctx, contribPubSub.SubscribeRequest{
 		Topic:    subscription.Topic,
 		Metadata: subscription.Metadata,
@@ -125,7 +158,7 @@ func (s *pubsub) PullMessages(stream proto.PubSub_PullMessagesServer) error {
 		ackErr := make(chan error, 1)
 
 		go func() {
-			ackErr <- tryGetAck(stream, msg)
+			ackErr <- tryGetAck(tfStream, msg)
 			close(ackErr)
 		}()
 

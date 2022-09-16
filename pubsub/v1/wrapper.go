@@ -56,20 +56,22 @@ func (s *pubsub) PullMessages(stream proto.PubSub_PullMessagesServer) error {
 	if subscription == nil {
 		return ErrSubscriptionNotSpecified
 	}
+
 	ctx, cancel := context.WithCancel(stream.Context())
 	defer cancel()
+
+	handler, startAckLoop := pullFor(stream)
 
 	err = s.impl.Subscribe(ctx, contribPubSub.SubscribeRequest{
 		Topic:    subscription.Topic,
 		Metadata: subscription.Metadata,
-	}, handlerFor(cancel, stream))
+	}, handler)
 
 	if err != nil {
 		return err
 	}
 
-	<-ctx.Done()
-	return nil
+	return startAckLoop()
 }
 
 func (s *pubsub) Init(_ context.Context, initReq *proto.PubSubInitRequest) (*proto.PubSubInitResponse, error) {

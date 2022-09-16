@@ -14,15 +14,11 @@ limitations under the License.
 package pubsub
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
-)
-
-var (
-	ErrMsgNotFound = errors.New("message not found or not specified")
 )
 
 // acknowledgementManager control the messages acknowledgement from the server.
@@ -55,7 +51,7 @@ func (m *acknowledgementManager) ack(messageID string, err error) error {
 	m.mu.RUnlock()
 
 	if !ok {
-		return ErrMsgNotFound
+		return fmt.Errorf("message %s not found or not specified", messageID)
 	}
 
 	select {

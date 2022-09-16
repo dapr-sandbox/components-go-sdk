@@ -55,13 +55,12 @@ func (s *grpcThreadSafeStream) recv() (*proto.PullMessagesRequest, error) {
 	return s.stream.Recv()
 }
 
-// ackLoop starts a receive loop for messages ack
-func ackLoop(cancel context.CancelFunc, manager *acknowledgementManager, stream threadSafeStream) {
-	defer cancel()
+// ackLoop starts a active ack loop reciving acks from client.
+func ackLoop(tfStream threadSafeStream, ackManager *acknowledgementManager) error {
 	for {
-		ack, err := stream.recv()
+		ack, err := tfStream.recv()
 		if err == io.EOF {
-			return
+			return nil
 		}
 
 		if err != nil {
@@ -78,25 +77,14 @@ func ackLoop(cancel context.CancelFunc, manager *acknowledgementManager, stream 
 		if ack.AckError != nil {
 			ackError = errors.New(ack.AckError.Message)
 		}
-		if err := manager.ack(ack.AckMessageId, ackError); err != nil {
+		if err := ackManager.ack(ack.AckMessageId, ackError); err != nil {
 			pubsubLogger.Warnf("error %v when trying to notify ack", err)
 		}
 	}
 }
 
-// handleFor creates a message handler for the given stream.
-// it starts an ack loop in background as a separate goroutine
-func handlerFor(cancel context.CancelFunc, stream proto.PubSub_PullMessagesServer) (handler func(ctx context.Context, msg *contribPubSub.NewMessage) error) {
-	tfStream := &grpcThreadSafeStream{
-		stream:   stream,
-		recvLock: &sync.Mutex{},
-		sendLock: &sync.Mutex{},
-	}
-	ackManager := &acknowledgementManager{
-		pendingAcks: map[string]chan error{},
-		mu:          &sync.RWMutex{},
-	}
-	go ackLoop(cancel, ackManager, tfStream)
+// handler build a pubsub handler using the given threadsafe stream and the ack manager.
+func handler(tfStream threadSafeStream, ackManager *acknowledgementManager) contribPubSub.Handler {
 	return func(ctx context.Context, contribMsg *contribPubSub.NewMessage) error {
 		msgID, pendingAck, cleanup := ackManager.get()
 		defer cleanup()
@@ -124,5 +112,21 @@ func handlerFor(cancel context.CancelFunc, stream proto.PubSub_PullMessagesServe
 		case <-ctx.Done():
 			return ErrAckTimeout
 		}
+	}
+}
+
+// pullFor creates a message handler for the given stream.
+func pullFor(stream proto.PubSub_PullMessagesServer) (pubsubHandler contribPubSub.Handler, acknLoop func() error) {
+	tfStream := &grpcThreadSafeStream{
+		sendLock: &sync.Mutex{},
+		recvLock: &sync.Mutex{},
+		stream:   stream,
+	}
+	ackManager := &acknowledgementManager{
+		pendingAcks: map[string]chan error{},
+		mu:          &sync.RWMutex{},
+	}
+	return handler(tfStream, ackManager), func() error {
+		return ackLoop(tfStream, ackManager)
 	}
 }

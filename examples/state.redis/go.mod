@@ -4,7 +4,7 @@ go 1.19
 
 replace github.com/dapr-sandbox/components-go-sdk => ../../.
 
-replace github.com/dapr/dapr => github.com/mcandeia/dapr v0.0.0-20220915194247-02e6753a9f34
+replace github.com/dapr/dapr => github.com/mcandeia/dapr v0.0.0-20220916144352-cad9faa9544b
 require (
 	github.com/dapr-sandbox/components-go-sdk v0.0.0-00010101000000-000000000000
 	github.com/dapr/components-contrib v1.8.0-rc.1.0.20220901165827-19341e5a0ff4

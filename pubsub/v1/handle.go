@@ -29,8 +29,8 @@ var ErrAckTimeout = errors.New("ack has timed out")
 
 // threadSafeStream wraps a grpc stream with locks to permit send and recv in multiples goroutines.
 type threadSafeStream interface {
-	send(*proto.Message) error
-	recv() (*proto.MessageAcknowledgement, error)
+	send(*proto.PullMessageResponse) error
+	recv() (*proto.PullMessagesRequest, error)
 }
 
 // grpcThreadSafeStream wraps a grpcStream for thread safe operations.
@@ -43,13 +43,13 @@ type grpcThreadSafeStream struct {
 	stream   proto.PubSub_PullMessagesServer
 }
 
-func (s *grpcThreadSafeStream) send(msg *proto.Message) error {
+func (s *grpcThreadSafeStream) send(msg *proto.PullMessageResponse) error {
 	s.sendLock.Lock()
 	defer s.sendLock.Unlock()
 	return s.stream.Send(msg)
 }
 
-func (s *grpcThreadSafeStream) recv() (*proto.MessageAcknowledgement, error) {
+func (s *grpcThreadSafeStream) recv() (*proto.PullMessagesRequest, error) {
 	s.recvLock.Lock()
 	defer s.recvLock.Unlock()
 	return s.stream.Recv()
@@ -78,10 +78,10 @@ func ackLoop(ctx context.Context, manager *acknowledgementManager, stream thread
 
 		var ackError error
 
-		if ack.Error != nil {
-			ackError = errors.New(ack.Error.Message)
+		if ack.AckError != nil {
+			ackError = errors.New(ack.AckError.Message)
 		}
-		manager.ack(ack.MessageId, ackError)
+		manager.ack(ack.AckMessageId, ackError)
 	}
 }
 
@@ -103,7 +103,7 @@ func handlerFor(stream proto.PubSub_PullMessagesServer) (handler func(ctx contex
 		msgID, pendingAck, cleanup := ackManager.get()
 		defer cleanup()
 
-		msg := &proto.Message{
+		msg := &proto.PullMessageResponse{
 			Data:        contribMsg.Data,
 			Topic:       contribMsg.Topic,
 			Metadata:    contribMsg.Metadata,

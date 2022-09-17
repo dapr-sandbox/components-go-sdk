@@ -37,6 +37,7 @@ jobs:
           - component: pubsub.memory
             type: pubsub
             cmd: go run examples/pubsub.memory/main.go &
+            dependencies: [go]
           - component: pubsub.redis
             type: pubsub
             cmd: go run examples/pubsub.redis/main.go &

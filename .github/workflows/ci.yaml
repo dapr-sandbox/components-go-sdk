@@ -34,6 +34,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - component: pubsub.memory
+            type: pubsub
+            cmd: go run examples/pubsub.memory/main.go &
           - component: pubsub.redis
             type: pubsub
             cmd: go run examples/pubsub.redis/main.go &

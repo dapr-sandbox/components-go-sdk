@@ -91,7 +91,7 @@ func handler(tfStream threadSafeStream, ackManager *acknowledgementManager) cont
 
 		msg := &proto.PullMessageResponse{
 			Data:        contribMsg.Data,
-			Topic:       contribMsg.Topic,
+			TopicName:   contribMsg.Topic,
 			Metadata:    contribMsg.Metadata,
 			ContentType: internal.ZeroIfNil(contribMsg.ContentType),
 			Id:          msgID,
@@ -103,7 +103,7 @@ func handler(tfStream threadSafeStream, ackManager *acknowledgementManager) cont
 		// we should ignore this since it will be probably retried by the underlying component.
 		err := tfStream.send(msg)
 		if err != nil {
-			return errors.Wrapf(err, "error when sending message %s to consumer on topic %s", msg.Id, msg.Topic)
+			return errors.Wrapf(err, "error when sending message %s to consumer on topic %s", msg.Id, msg.TopicName)
 		}
 
 		select {

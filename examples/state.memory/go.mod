@@ -27,4 +27,4 @@ require (
 
 replace github.com/dapr-sandbox/components-go-sdk => ../../.
 
-replace github.com/dapr/dapr => github.com/mcandeia/dapr v0.0.0-20220916152641-74966c49c1b6
+replace github.com/dapr/dapr => github.com/mcandeia/dapr v0.0.0-20220918121030-4db7a168fcb6

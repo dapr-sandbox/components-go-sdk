@@ -51,7 +51,7 @@ func (s *pubsub) PullMessages(stream proto.PubSub_PullMessagesServer) error {
 		return err
 	}
 
-	subscription := fstMessage.GetSubscription()
+	subscription := fstMessage.GetTopic()
 
 	if subscription == nil {
 		return ErrSubscriptionNotSpecified
@@ -63,7 +63,7 @@ func (s *pubsub) PullMessages(stream proto.PubSub_PullMessagesServer) error {
 	handler, startAckLoop := pullFor(stream)
 
 	err = s.impl.Subscribe(ctx, contribPubSub.SubscribeRequest{
-		Topic:    subscription.Topic,
+		Topic:    subscription.Name,
 		Metadata: subscription.Metadata,
 	}, handler)
 

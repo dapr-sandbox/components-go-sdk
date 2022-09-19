@@ -16,6 +16,7 @@ package pubsub
 import (
 	"context"
 	"io"
+	"sync"
 	"sync/atomic"
 	"testing"
 
@@ -178,10 +179,14 @@ func TestPubSubPullMessages(t *testing.T) {
 		}
 		close(subsChan)
 		handleCount := atomic.Int64{}
+
+		var waitHandle sync.WaitGroup
+		waitHandle.Add(1)
 		impl := &fakePubSubImpl{
 			subscribeChan: subsChan,
 			onHandlerResp: func(_ error) {
 				handleCount.Add(1)
+				waitHandle.Done()
 			},
 			subscribeCtx: context.Background(),
 		}
@@ -217,10 +222,11 @@ func TestPubSubPullMessages(t *testing.T) {
 			},
 		}
 		assert.Nil(t, ps.PullMessages(stream))
+		waitHandle.Wait()
 		assert.Equal(t, int64(3), stream.recvCalled.Load()) // recv topic, recv message, recv eof
 		assert.Equal(t, int64(1), stream.sendCalled.Load())
 		assert.Equal(t, int64(1), impl.subscribeCalled.Load())
-		assert.Equal(t, int64(0), handleCount.Load())
+		assert.Equal(t, int64(1), handleCount.Load())
 	})
 }
 

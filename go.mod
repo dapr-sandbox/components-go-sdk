@@ -16,7 +16,7 @@ require (
 
 require (
 	github.com/dapr/components-contrib v1.8.0-rc.1.0.20220901165827-19341e5a0ff4
-	github.com/dapr/dapr v1.8.4-0.20220909163359-efaca389cc32
+	github.com/dapr/dapr v1.8.4-0.20220919205204-a52441615dc9
 	github.com/dapr/kit v0.0.2
 	github.com/google/uuid v1.3.0
 	github.com/pkg/errors v0.9.1
@@ -24,5 +24,3 @@ require (
 	google.golang.org/grpc v1.47.0
 	google.golang.org/protobuf v1.28.0
 )
-
-replace github.com/dapr/dapr => github.com/mcandeia/dapr v0.0.0-20220919193709-e91279861361

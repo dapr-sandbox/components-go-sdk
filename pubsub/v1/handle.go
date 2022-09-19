@@ -29,7 +29,7 @@ var ErrAckTimeout = errors.New("ack has timed out")
 
 // threadSafeStream wraps a grpc stream with locks to permit send and recv in multiples goroutines.
 type threadSafeStream interface {
-	send(*proto.PullMessageResponse) error
+	send(*proto.PullMessagesResponse) error
 	recv() (*proto.PullMessagesRequest, error)
 }
 
@@ -43,7 +43,7 @@ type grpcThreadSafeStream struct {
 	stream   proto.PubSub_PullMessagesServer
 }
 
-func (s *grpcThreadSafeStream) send(msg *proto.PullMessageResponse) error {
+func (s *grpcThreadSafeStream) send(msg *proto.PullMessagesResponse) error {
 	s.sendLock.Lock()
 	defer s.sendLock.Unlock()
 	return s.stream.Send(msg)
@@ -89,7 +89,7 @@ func handler(tfStream threadSafeStream, ackManager *acknowledgementManager) cont
 		msgID, pendingAck, cleanup := ackManager.get()
 		defer cleanup()
 
-		msg := &proto.PullMessageResponse{
+		msg := &proto.PullMessagesResponse{
 			Data:        contribMsg.Data,
 			TopicName:   contribMsg.Topic,
 			Metadata:    contribMsg.Metadata,
@@ -122,10 +122,7 @@ func pullFor(stream proto.PubSub_PullMessagesServer) (pubsubHandler contribPubSu
 		recvLock: &sync.Mutex{},
 		stream:   stream,
 	}
-	ackManager := &acknowledgementManager{
-		pendingAcks: map[string]chan error{},
-		mu:          &sync.RWMutex{},
-	}
+	ackManager := newAckManager()
 	return handler(tfStream, ackManager), func() error {
 		return ackLoop(tfStream, ackManager)
 	}

@@ -23,8 +23,19 @@ import (
 
 // acknowledgementManager control the messages acknowledgement from the server.
 type acknowledgementManager struct {
-	pendingAcks map[string]chan error
-	mu          *sync.RWMutex
+	pendingAcks    map[string]chan error
+	mu             *sync.RWMutex
+	ackTimeoutFunc func() <-chan time.Time
+}
+
+func newAckManager() *acknowledgementManager {
+	return &acknowledgementManager{
+		pendingAcks: map[string]chan error{},
+		mu:          &sync.RWMutex{},
+		ackTimeoutFunc: func() <-chan time.Time {
+			return time.After(time.Second)
+		},
+	}
 }
 
 // get generate a new messageID for get acks and returns the ack chan.
@@ -57,10 +68,10 @@ func (m *acknowledgementManager) ack(messageID string, err error) error {
 	select {
 	// wait time for outstanding acks
 	// acks should be instantaneous as the channel is bufferized size 1
-	// if this operation takes longer than 1 second
+	// if this operation takes longer than the waitFunc (defaults to 1s)
 	// it probably means that no consumer is waiting for the message ack
 	// or it could be duplicated ack for the same message.
-	case <-time.After(time.Second):
+	case <-m.ackTimeoutFunc():
 		return nil
 	case c <- err:
 		return nil

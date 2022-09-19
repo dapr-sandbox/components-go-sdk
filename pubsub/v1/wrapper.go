@@ -31,7 +31,7 @@ var pubsubLogger = logger.NewLogger("pubsub-component")
 var defaultPubSub = &pubsub{}
 
 var (
-	ErrSubscriptionNotSpecified = status.Errorf(codes.InvalidArgument, "subscription should be fulfilled in the very first message")
+	ErrTopicNotSpecified = status.Errorf(codes.InvalidArgument, "topic should be fulfilled in the very first message")
 )
 
 type pubsub struct {
@@ -54,7 +54,7 @@ func (s *pubsub) PullMessages(stream proto.PubSub_PullMessagesServer) error {
 	subscription := fstMessage.GetTopic()
 
 	if subscription == nil {
-		return ErrSubscriptionNotSpecified
+		return ErrTopicNotSpecified
 	}
 
 	ctx, cancel := context.WithCancel(stream.Context())

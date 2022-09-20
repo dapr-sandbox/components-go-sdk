@@ -93,7 +93,7 @@ func handler(tfStream threadSafeStream, ackManager *acknowledgementManager) cont
 			Data:        contribMsg.Data,
 			TopicName:   contribMsg.Topic,
 			Metadata:    contribMsg.Metadata,
-			ContentType: internal.ZeroIfNil(contribMsg.ContentType),
+			ContentType: internal.ZeroValueIfNil(contribMsg.ContentType),
 			Id:          msgID,
 		}
 

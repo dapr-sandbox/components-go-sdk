@@ -51,6 +51,9 @@ func (out *outputBinding) Invoke(ctx context.Context, req *proto.InvokeRequest) 
 	if err != nil {
 		return nil, err
 	}
+	if resp == nil {
+		return &proto.InvokeResponse{}, nil
+	}
 	return &proto.InvokeResponse{
 		Data:        resp.Data,
 		Metadata:    resp.Metadata,

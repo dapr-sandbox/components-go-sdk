@@ -27,8 +27,11 @@ import (
 var ErrAckTimeout = errors.New("ack has timed out")
 
 // ackLoop starts an active ack loop reciving acks from client.
-func ackLoop(tfStream internal.ThreadSafeStream[proto.PullMessagesResponse, proto.PullMessagesRequest], ackManager *internal.AcknowledgementManager[error]) error {
+func ackLoop(streamCtx context.Context, tfStream internal.ThreadSafeStream[proto.PullMessagesResponse, proto.PullMessagesRequest], ackManager *internal.AcknowledgementManager[error]) error {
 	for {
+		if streamCtx.Err() != nil {
+			return streamCtx.Err()
+		}
 		ack, err := tfStream.Recv()
 		if err == io.EOF {
 			return nil
@@ -91,6 +94,6 @@ func pullFor(stream proto.PubSub_PullMessagesServer) (pubsubHandler contribPubSu
 	tfStream := internal.NewGRPCThreadSafeStream[proto.PullMessagesResponse, proto.PullMessagesRequest](stream)
 	ackManager := internal.NewAckManager[error]()
 	return handler(tfStream, ackManager), func() error {
-		return ackLoop(tfStream, ackManager)
+		return ackLoop(stream.Context(), tfStream, ackManager)
 	}
 }

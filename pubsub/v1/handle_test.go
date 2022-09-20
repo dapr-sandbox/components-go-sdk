@@ -68,7 +68,7 @@ func TestAckLoop(t *testing.T) {
 		}
 		close(recvChan)
 		stream := &fakeTsStream{recvChan: recvChan}
-		assert.Nil(t, ackLoop(stream, nil))
+		assert.Nil(t, ackLoop(context.Background(), stream, nil))
 		assert.Equal(t, int64(1), stream.recvCalled.Load())
 	})
 	t.Run("ack should be called with nil when no error is returned", func(t *testing.T) {
@@ -86,7 +86,7 @@ func TestAckLoop(t *testing.T) {
 		close(recvChan)
 		stream := &fakeTsStream{recvChan: recvChan}
 		assert.NotEmpty(t, ack.Pending())
-		assert.Nil(t, ackLoop(stream, ack))
+		assert.Nil(t, ackLoop(context.Background(), stream, ack))
 		assert.Equal(t, int64(2), stream.recvCalled.Load())
 		err, notClosed := <-c
 		assert.True(t, notClosed)
@@ -111,7 +111,7 @@ func TestAckLoop(t *testing.T) {
 		close(recvChan)
 		stream := &fakeTsStream{recvChan: recvChan}
 		assert.NotEmpty(t, ack.Pending())
-		assert.Nil(t, ackLoop(stream, ack))
+		assert.Nil(t, ackLoop(context.Background(), stream, ack))
 		assert.Equal(t, int64(2), stream.recvCalled.Load())
 		err, notClosed := <-c
 		assert.True(t, notClosed)

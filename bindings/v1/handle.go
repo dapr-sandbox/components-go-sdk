@@ -32,8 +32,11 @@ type handleResponse struct {
 var ErrAckTimeout = errors.New("ack has timed out")
 
 // ackLoop starts an active ack loop reciving acks from client.
-func ackLoop(tfStream internal.ThreadSafeStream[proto.ReadResponse, proto.ReadRequest], ackManager *internal.AcknowledgementManager[*handleResponse]) error {
+func ackLoop(streamCtx context.Context, tfStream internal.ThreadSafeStream[proto.ReadResponse, proto.ReadRequest], ackManager *internal.AcknowledgementManager[*handleResponse]) error {
 	for {
+		if streamCtx.Err() != nil {
+			return streamCtx.Err()
+		}
 		ack, err := tfStream.Recv()
 		if err == io.EOF {
 			return nil
@@ -98,6 +101,6 @@ func streamReader(stream proto.InputBinding_ReadServer) (bindingsHandler contrib
 	tfStream := internal.NewGRPCThreadSafeStream[proto.ReadResponse, proto.ReadRequest](stream)
 	ackManager := internal.NewAckManager[*handleResponse]()
 	return handler(tfStream, ackManager), func() error {
-		return ackLoop(tfStream, ackManager)
+		return ackLoop(stream.Context(), tfStream, ackManager)
 	}
 }

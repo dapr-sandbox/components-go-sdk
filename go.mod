@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/mitchellh/mapstructure v1.5.1-0.20220423185008-bf980b35cac4 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	golang.org/x/net v0.0.0-20220630215102-69896b714898 // indirect
@@ -15,12 +16,12 @@ require (
 )
 
 require (
-	github.com/dapr/components-contrib v1.8.0-rc.1.0.20220901165827-19341e5a0ff4
-	github.com/dapr/dapr v1.8.4-0.20220919205204-a52441615dc9
+	github.com/dapr/components-contrib v1.8.0-rc.1.0.20220923213414-da5a2fd03a4d
+	github.com/dapr/dapr v1.8.4-0.20220926041503-51289b9249de
 	github.com/dapr/kit v0.0.2
 	github.com/google/uuid v1.3.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.8.0
-	google.golang.org/grpc v1.47.0
+	google.golang.org/grpc v1.48.0
 	google.golang.org/protobuf v1.28.0
 )

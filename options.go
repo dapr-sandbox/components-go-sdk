@@ -18,8 +18,10 @@ import (
 
 	"github.com/dapr/kit/logger"
 
+	"github.com/dapr-sandbox/components-go-sdk/bindings/v1"
 	"github.com/dapr-sandbox/components-go-sdk/pubsub/v1"
 	"github.com/dapr-sandbox/components-go-sdk/state/v1"
+
 	"google.golang.org/grpc"
 )
 
@@ -40,6 +42,26 @@ func UseStateStore(stateStore state.Store) Option {
 		co.useGrpcServer = append(co.useGrpcServer, func(s *grpc.Server) {
 			svcLogger.Info("dapr state store was registered")
 			state.Register(s, stateStore)
+		})
+	}
+}
+
+// UseOutputBinding sets the component outputbinding implementation.
+func UseOutputBinding(outputbinding bindings.OutputBinding) Option {
+	return func(co *componentOpts) {
+		co.useGrpcServer = append(co.useGrpcServer, func(s *grpc.Server) {
+			svcLogger.Info("dapr outputbinding was registered")
+			bindings.RegisterOutput(s, outputbinding)
+		})
+	}
+}
+
+// UseInputBinding sets the component inputbinding implementation.
+func UseInputBinding(inputbinding bindings.InputBinding) Option {
+	return func(co *componentOpts) {
+		co.useGrpcServer = append(co.useGrpcServer, func(s *grpc.Server) {
+			svcLogger.Info("dapr inputbinding was registered")
+			bindings.RegisterInput(s, inputbinding)
 		})
 	}
 }

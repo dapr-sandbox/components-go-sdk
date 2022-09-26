@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package pubsub
+package bindings
 
 import (
 	"context"
@@ -22,34 +22,34 @@ import (
 	"testing"
 
 	"github.com/dapr-sandbox/components-go-sdk/internal"
-	contribPubSub "github.com/dapr/components-contrib/pubsub"
+	contribBindings "github.com/dapr/components-contrib/bindings"
 	proto "github.com/dapr/dapr/pkg/proto/components/v1"
 	"github.com/stretchr/testify/assert"
 )
 
 type recvFakeResp struct {
-	msg *proto.PullMessagesRequest
+	msg *proto.ReadRequest
 	err error
 }
 type fakeTsStream struct {
 	sendCalled   atomic.Int64
-	onSendCalled func(*proto.PullMessagesResponse)
+	onSendCalled func(*proto.ReadResponse)
 	sendErr      error
 	recvCalled   atomic.Int64
 	recvChan     chan *recvFakeResp
 }
 
-func (f *fakeTsStream) Send(msg *proto.PullMessagesResponse) error {
+func (f *fakeTsStream) Send(msg *proto.ReadResponse) error {
 	f.sendCalled.Add(1)
 	if f.onSendCalled != nil {
 		f.onSendCalled(msg)
 	}
 	return f.sendErr
 }
-func (f *fakeTsStream) Recv() (*proto.PullMessagesRequest, error) {
+func (f *fakeTsStream) Recv() (*proto.ReadRequest, error) {
 	f.recvCalled.Add(1)
 	var (
-		resp *proto.PullMessagesRequest
+		resp *proto.ReadRequest
 		err  error
 	)
 	if f.recvChan != nil {
@@ -72,12 +72,12 @@ func TestAckLoop(t *testing.T) {
 		assert.Equal(t, int64(1), stream.recvCalled.Load())
 	})
 	t.Run("ack should be called with nil when no error is returned", func(t *testing.T) {
-		ack := internal.NewAckManager[error]()
+		ack := internal.NewAckManager[*handleResponse]()
 		msgID, c, _ := ack.Get()
 		recvChan := make(chan *recvFakeResp, 2)
 		recvChan <- &recvFakeResp{
-			msg: &proto.PullMessagesRequest{
-				AckMessageId: msgID,
+			msg: &proto.ReadRequest{
+				MessageId: msgID,
 			},
 		}
 		recvChan <- &recvFakeResp{
@@ -88,19 +88,19 @@ func TestAckLoop(t *testing.T) {
 		assert.NotEmpty(t, ack.Pending())
 		assert.Nil(t, ackLoop(stream, ack))
 		assert.Equal(t, int64(2), stream.recvCalled.Load())
-		err, notClosed := <-c
+		resp, notClosed := <-c
 		assert.True(t, notClosed)
-		assert.Nil(t, err)
+		assert.Nil(t, resp.err)
 	})
 	t.Run("ack should be called with err when error is returned", func(t *testing.T) {
 		const fakeMsg = "fake-err"
-		ack := internal.NewAckManager[error]()
+		ack := internal.NewAckManager[*handleResponse]()
 		msgID, c, _ := ack.Get()
 		recvChan := make(chan *recvFakeResp, 2)
 		recvChan <- &recvFakeResp{
-			msg: &proto.PullMessagesRequest{
-				AckMessageId: msgID,
-				AckError: &proto.AckMessageError{
+			msg: &proto.ReadRequest{
+				MessageId: msgID,
+				ResponseError: &proto.AckResponseError{
 					Message: fakeMsg,
 				},
 			},
@@ -113,9 +113,9 @@ func TestAckLoop(t *testing.T) {
 		assert.NotEmpty(t, ack.Pending())
 		assert.Nil(t, ackLoop(stream, ack))
 		assert.Equal(t, int64(2), stream.recvCalled.Load())
-		err, notClosed := <-c
+		resp, notClosed := <-c
 		assert.True(t, notClosed)
-		assert.Equal(t, err.Error(), fakeMsg)
+		assert.Equal(t, resp.err.Error(), fakeMsg)
 	})
 }
 
@@ -123,21 +123,23 @@ func TestHandler(t *testing.T) {
 	t.Run("when send returns an error so handler should return an error and cleanup pending acks", func(t *testing.T) {
 		sendErr := errors.New("fake-err")
 		stream := &fakeTsStream{sendErr: sendErr}
-		acks := internal.NewAckManager[error]()
+		acks := internal.NewAckManager[*handleResponse]()
 		handlerf := handler(stream, acks)
 
-		assert.NotNil(t, handlerf(context.TODO(), &contribPubSub.NewMessage{}))
+		_, err := handlerf(context.TODO(), &contribBindings.ReadResponse{})
+		assert.NotNil(t, err)
 		assert.Empty(t, acks.Pending())
 		assert.Equal(t, int64(1), stream.sendCalled.Load())
 	})
 	t.Run("handle should return Acktimeout when context is done", func(t *testing.T) {
 		stream := &fakeTsStream{}
-		acks := internal.NewAckManager[error]()
+		acks := internal.NewAckManager[*handleResponse]()
 		handlerf := handler(stream, acks)
 		ctx, cancel := context.WithCancel(context.Background())
 		cancel()
 
-		assert.Equal(t, ErrAckTimeout, handlerf(ctx, &contribPubSub.NewMessage{}))
+		_, err := handlerf(ctx, &contribBindings.ReadResponse{})
+		assert.Equal(t, ErrAckTimeout, err)
 		assert.Empty(t, acks.Pending())
 		assert.Equal(t, int64(1), stream.sendCalled.Load())
 	})
@@ -146,20 +148,23 @@ func TestHandler(t *testing.T) {
 		var sendCalledWg sync.WaitGroup
 		sendCalledWg.Add(1)
 		stream := &fakeTsStream{
-			onSendCalled: func(*proto.PullMessagesResponse) {
+			onSendCalled: func(*proto.ReadResponse) {
 				sendCalledWg.Done()
 			},
 		}
-		acks := internal.NewAckManager[error]()
+		acks := internal.NewAckManager[*handleResponse]()
 		handlerf := handler(stream, acks)
 		go func() {
 			sendCalledWg.Wait()
 			for _, pendingAck := range acks.Pending() {
-				pendingAck <- fakeErr
+				pendingAck <- &handleResponse{
+					err: fakeErr,
+				}
 			}
 		}()
 
-		assert.Equal(t, fakeErr, handlerf(context.Background(), &contribPubSub.NewMessage{}))
+		_, err := handlerf(context.Background(), &contribBindings.ReadResponse{})
+		assert.Equal(t, fakeErr, err)
 		assert.Empty(t, acks.Pending())
 		assert.Equal(t, int64(1), stream.sendCalled.Load())
 	})

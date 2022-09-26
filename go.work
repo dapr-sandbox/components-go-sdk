@@ -11,3 +11,5 @@ use ./examples/pubsub.kafka
 use ./examples/pubsub.redis
 
 use ./examples/pubsub.memory
+
+use ./examples/bindings.kafka

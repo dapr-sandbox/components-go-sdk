@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package pubsub
+package internal
 
 import (
 	"sync"
@@ -23,29 +23,29 @@ import (
 
 func TestAckManager(t *testing.T) {
 	t.Run("ack manager should add pending when ack get called", func(t *testing.T) {
-		manager := &acknowledgementManager{
+		manager := &AcknowledgementManager[error]{
 			pendingAcks: map[string]chan error{},
 			mu:          &sync.RWMutex{},
 		}
 		assert.Empty(t, manager.pendingAcks)
-		manager.get()
+		manager.Get()
 		assert.NotEmpty(t, manager.pendingAcks)
 	})
 	t.Run("ack manager should return a bufferized channel when ack get called", func(t *testing.T) {
-		manager := &acknowledgementManager{
+		manager := &AcknowledgementManager[error]{
 			pendingAcks: map[string]chan error{},
 			mu:          &sync.RWMutex{},
 		}
-		_, c, _ := manager.get()
+		_, c, _ := manager.Get()
 		assert.Equal(t, 1, cap(c))
 	})
 	t.Run("cleanup should delete pending ack and close pending channel", func(t *testing.T) {
-		manager := &acknowledgementManager{
+		manager := &AcknowledgementManager[error]{
 			pendingAcks: map[string]chan error{},
 			mu:          &sync.RWMutex{},
 		}
 		assert.Empty(t, manager.pendingAcks)
-		_, c, cleanup := manager.get()
+		_, c, cleanup := manager.Get()
 		assert.NotEmpty(t, manager.pendingAcks)
 		cleanup()
 		assert.Empty(t, manager.pendingAcks)
@@ -54,13 +54,13 @@ func TestAckManager(t *testing.T) {
 		assert.False(t, ok)
 	})
 	t.Run("ack-ing a message that doesn't exists should return an error", func(t *testing.T) {
-		manager := newAckManager()
-		assert.NotNil(t, manager.ack("fake-id", nil))
+		manager := NewAckManager[error]()
+		assert.NotNil(t, manager.Ack("fake-id", nil))
 	})
 	t.Run("ack-ing a message that exists should return not return error", func(t *testing.T) {
-		manager := newAckManager()
-		msgID, _, _ := manager.get()
-		assert.Nil(t, manager.ack(msgID, nil))
+		manager := NewAckManager[error]()
+		msgID, _, _ := manager.Get()
+		assert.Nil(t, manager.Ack(msgID, nil))
 	})
 	t.Run("duplicated messages should have timeout when no consumer available", func(t *testing.T) {
 		const fakeMessageID = "fakeMessageID"
@@ -69,7 +69,7 @@ func TestAckManager(t *testing.T) {
 		c := make(chan time.Time, 1)
 		c <- timeVal
 		close(c)
-		manager := &acknowledgementManager{
+		manager := &AcknowledgementManager[error]{
 			pendingAcks: map[string]chan error{
 				fakeMessageID: unbufferizedChannel,
 			},
@@ -80,7 +80,7 @@ func TestAckManager(t *testing.T) {
 		}
 
 		assert.Len(t, c, 1)
-		manager.ack(fakeMessageID, nil)
+		manager.Ack(fakeMessageID, nil)
 		assert.Len(t, c, 0)
 	})
 }

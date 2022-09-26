@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package pubsub
+package internal
 
 import (
 	"fmt"
@@ -21,16 +21,16 @@ import (
 	"github.com/google/uuid"
 )
 
-// acknowledgementManager control the messages acknowledgement from the server.
-type acknowledgementManager struct {
-	pendingAcks    map[string]chan error
+// AcknowledgementManager control the messages acknowledgement from the server.
+type AcknowledgementManager[TAckResult any] struct {
+	pendingAcks    map[string]chan TAckResult
 	mu             *sync.RWMutex
 	ackTimeoutFunc func() <-chan time.Time
 }
 
-func newAckManager() *acknowledgementManager {
-	return &acknowledgementManager{
-		pendingAcks: map[string]chan error{},
+func NewAckManager[TAckResult any]() *AcknowledgementManager[TAckResult] {
+	return &AcknowledgementManager[TAckResult]{
+		pendingAcks: map[string]chan TAckResult{},
 		mu:          &sync.RWMutex{},
 		ackTimeoutFunc: func() <-chan time.Time {
 			return time.After(time.Second)
@@ -38,13 +38,26 @@ func newAckManager() *acknowledgementManager {
 	}
 }
 
-// get generate a new messageID for get acks and returns the ack chan.
-func (m *acknowledgementManager) get() (messageID string, ackChan chan error, cleanup func()) {
+// Pending returns a copy of pending acks list
+func (m *AcknowledgementManager[TAckResult]) Pending() []chan TAckResult {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	pendings := make([]chan TAckResult, len(m.pendingAcks))
+	idx := 0
+	for _, ack := range m.pendingAcks {
+		pendings[idx] = ack
+		idx++
+	}
+	return pendings
+}
+
+// Get generate a new messageID for Get acks and returns the ack chan.
+func (m *AcknowledgementManager[TAckResult]) Get() (messageID string, ackChan chan TAckResult, cleanup func()) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	msgID := uuid.New().String()
 
-	ackChan = make(chan error, 1)
+	ackChan = make(chan TAckResult, 1)
 	m.pendingAcks[msgID] = ackChan
 
 	return msgID, ackChan, func() {
@@ -55,8 +68,8 @@ func (m *acknowledgementManager) get() (messageID string, ackChan chan error, cl
 	}
 }
 
-// ack acknowledge a message
-func (m *acknowledgementManager) ack(messageID string, err error) error {
+// Ack acknowledge a message
+func (m *AcknowledgementManager[TAckResult]) Ack(messageID string, result TAckResult) error {
 	m.mu.RLock()
 	c, ok := m.pendingAcks[messageID]
 	m.mu.RUnlock()
@@ -73,7 +86,7 @@ func (m *acknowledgementManager) ack(messageID string, err error) error {
 	// or it could be duplicated ack for the same message.
 	case <-m.ackTimeoutFunc():
 		return nil
-	case c <- err:
+	case c <- result:
 		return nil
 	}
 }

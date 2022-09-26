@@ -56,11 +56,8 @@ github.com/cpuguy83/go-md2man/v2 v2.0.0-20190314233015-f79a8a8ca69d/go.mod h1:ma
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/dapr/components-contrib v1.8.0-rc.1.0.20220923213414-da5a2fd03a4d h1:aikcGVRm+7uU1Jx3O9Qy/BsrVP1egNZJ2oytSom9jBM=
 github.com/dapr/components-contrib v1.8.0-rc.1.0.20220923213414-da5a2fd03a4d/go.mod h1:z/210gfq/Wb6R8Fbe8aliiC7UO3oYO3u2isnfurRx8o=
-github.com/dapr/components-contrib v1.8.0-rc.1.0.20220924063709-b0d267317d47/go.mod h1:z/210gfq/Wb6R8Fbe8aliiC7UO3oYO3u2isnfurRx8o=
 github.com/dapr/dapr v1.8.4-0.20220926041503-51289b9249de h1:LdCXTAsk2vNrrwuM00ZL06urb0GXvOvi/M67EYpSv6M=
 github.com/dapr/dapr v1.8.4-0.20220926041503-51289b9249de/go.mod h1:TFsMaVohku5yzou6/0LHsbhNfBubIYX1c6RGH3iAFu4=
-github.com/dapr/dapr v1.8.4-0.20220927025107-d4dceb66b590 h1:5H7eQbpx02+3d+evMJgqjYYgfseUPfm3tUJQnFfnceE=
-github.com/dapr/dapr v1.8.4-0.20220927025107-d4dceb66b590/go.mod h1:FxiDyP2AwzSbX+o/R3bRYWxd5W017UyXUnikjKIVOHs=
 github.com/dapr/kit v0.0.2 h1:VNg6RWrBMOdtY0/ZLztyAa/RjyFLaskdO9wt2HIREwk=
 github.com/dapr/kit v0.0.2/go.mod h1:Q4TWm9+vcPZFGehaJUZt2hvA805wJm7FIuoArytWJ8o=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

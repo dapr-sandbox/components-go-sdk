@@ -34,6 +34,20 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - component: bindings.kafka
+            type: bindings
+            cmd: go run examples/bindings.kafka/main.go &
+            dependencies: [go, kafka]
+            operations: |
+              - create
+              - operations
+            metadata: |
+              publishTopic: binding-topic
+              topics: binding-topic
+              brokers: localhost:9092
+              consumerGroup: pubsubgroup1
+              authRequired: "false"
+              initialOffset: oldest
           - component: pubsub.memory
             type: pubsub
             cmd: go run examples/pubsub.memory/main.go &

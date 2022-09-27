@@ -6,14 +6,14 @@ replace github.com/dapr-sandbox/components-go-sdk => ../../.
 
 require (
 	github.com/dapr-sandbox/components-go-sdk v0.0.0-00010101000000-000000000000
-	github.com/dapr/components-contrib v1.8.0-rc.1.0.20220923213414-da5a2fd03a4d
+	github.com/dapr/components-contrib v1.8.0-rc.1.0.20220924063709-b0d267317d47
 	github.com/dapr/kit v0.0.2
 )
 
 require (
 	github.com/Shopify/sarama v1.30.0 // indirect
 	github.com/cenkalti/backoff/v4 v4.1.3 // indirect
-	github.com/dapr/dapr v1.8.4-0.20220926041503-51289b9249de // indirect
+	github.com/dapr/dapr v1.8.4-0.20220927025107-d4dceb66b590 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/eapache/go-resiliency v1.2.0 // indirect
 	github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21 // indirect

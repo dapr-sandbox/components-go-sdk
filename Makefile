@@ -51,7 +51,7 @@ $(foreach MODFILE,$(MODFILES),$(eval $(call replace-target,$(MODFILE))))
 REPLACE_MODFILES:=$(foreach ITEM,$(MODFILES),replace-$(ITEM))
 
 .PHONY: replace-all
-repalce-all: $(REPLACE_MODFILES)
+replace-all: $(REPLACE_MODFILES)
 
 
 # Executes a go get using the desired version.

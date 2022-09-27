@@ -9,7 +9,7 @@ require (
 )
 
 require (
-	github.com/dapr/dapr v1.8.4-0.20220927025107-d4dceb66b590 // indirect
+	github.com/dapr/dapr v1.8.4-0.20220927170932-1c498253f24b // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect

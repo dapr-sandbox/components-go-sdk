@@ -21,6 +21,7 @@ import (
 	"syscall"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 // ErrSocketNotDefined is returned when the env variable `DAPR_COMPONENT_SOCKET_PATH` is not set
@@ -88,6 +89,7 @@ func Run(opts ...Option) error {
 		return err
 	}
 
+	reflection.Register(server)
 	return server.Serve(lis)
 }
 

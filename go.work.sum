@@ -1674,6 +1674,8 @@ github.com/mcandeia/dapr v0.0.0-20220908131426-74f653eed9cb h1:s+jQU+n9Di4pc3sO0
 github.com/mcandeia/dapr v0.0.0-20220908131426-74f653eed9cb/go.mod h1:id6jlg9wW4fuvsCnJMqPKllBZFpb6Baqn0CbnDrEbPg=
 github.com/mcandeia/dapr v0.0.0-20220919221907-415dfe742806 h1:lkuvrDzP24+jriTAYVOdNLqcOc8dEGCNyJbAbUn1Bv0=
 github.com/mcandeia/dapr v0.0.0-20220919221907-415dfe742806/go.mod h1:id6jlg9wW4fuvsCnJMqPKllBZFpb6Baqn0CbnDrEbPg=
+github.com/mcandeia/dapr v0.0.0-20220927121018-bce54342f9f1 h1:hEQ/5FLi3aq7V1EYU4akPllrBQjj7hlQbBDnSAeFi6Y=
+github.com/mcandeia/dapr v0.0.0-20220927121018-bce54342f9f1/go.mod h1:FxiDyP2AwzSbX+o/R3bRYWxd5W017UyXUnikjKIVOHs=
 github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b/go.mod h1:01TrycV0kFyexm33Z7vhZRXopbI8J3TDReVlkTgMUxE=
 github.com/microcosm-cc/bluemonday v1.0.1/go.mod h1:hsXNsILzKxV+sX77C5b8FSuKF00vh2OMYv+xgHpAMF4=
 github.com/microcosm-cc/bluemonday v1.0.17/go.mod h1:Z0r70sCuXHig8YpBzCc5eGHAap2K7e/u082ZUpDRRqM=

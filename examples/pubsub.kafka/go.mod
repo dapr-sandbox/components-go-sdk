@@ -46,3 +46,5 @@ require (
 	google.golang.org/grpc v1.48.0 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 )
+
+replace github.com/dapr/dapr => github.com/mcandeia/dapr v0.0.0-20220927121018-bce54342f9f1

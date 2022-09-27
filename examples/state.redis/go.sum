@@ -17,13 +17,8 @@ github.com/cncf/udpa/go v0.0.0-20210930031921-04548b0d99d4/go.mod h1:6pvJx4me5XP
 github.com/cncf/xds/go v0.0.0-20210922020428-25de7278fc84/go.mod h1:eXthEFrGJvWHgFFCl3hGmgk+/aYT6PnTQLykKQRLhEs=
 github.com/cncf/xds/go v0.0.0-20211001041855-01bcc9b48dfe/go.mod h1:eXthEFrGJvWHgFFCl3hGmgk+/aYT6PnTQLykKQRLhEs=
 github.com/cncf/xds/go v0.0.0-20211011173535-cb28da3451f1/go.mod h1:eXthEFrGJvWHgFFCl3hGmgk+/aYT6PnTQLykKQRLhEs=
-github.com/dapr/components-contrib v1.8.0-rc.1.0.20220923213414-da5a2fd03a4d h1:aikcGVRm+7uU1Jx3O9Qy/BsrVP1egNZJ2oytSom9jBM=
-github.com/dapr/components-contrib v1.8.0-rc.1.0.20220923213414-da5a2fd03a4d/go.mod h1:z/210gfq/Wb6R8Fbe8aliiC7UO3oYO3u2isnfurRx8o=
+github.com/dapr/components-contrib v1.8.0-rc.1.0.20220924063709-b0d267317d47 h1:t/Qkm5HvxsxWGJImUOOLEsiljrBwdceYULbI9eOouS0=
 github.com/dapr/components-contrib v1.8.0-rc.1.0.20220924063709-b0d267317d47/go.mod h1:z/210gfq/Wb6R8Fbe8aliiC7UO3oYO3u2isnfurRx8o=
-github.com/dapr/dapr v1.8.4-0.20220926041503-51289b9249de h1:LdCXTAsk2vNrrwuM00ZL06urb0GXvOvi/M67EYpSv6M=
-github.com/dapr/dapr v1.8.4-0.20220926041503-51289b9249de/go.mod h1:TFsMaVohku5yzou6/0LHsbhNfBubIYX1c6RGH3iAFu4=
-github.com/dapr/dapr v1.8.4-0.20220927025107-d4dceb66b590 h1:5H7eQbpx02+3d+evMJgqjYYgfseUPfm3tUJQnFfnceE=
-github.com/dapr/dapr v1.8.4-0.20220927025107-d4dceb66b590/go.mod h1:FxiDyP2AwzSbX+o/R3bRYWxd5W017UyXUnikjKIVOHs=
 github.com/dapr/kit v0.0.2 h1:VNg6RWrBMOdtY0/ZLztyAa/RjyFLaskdO9wt2HIREwk=
 github.com/dapr/kit v0.0.2/go.mod h1:Q4TWm9+vcPZFGehaJUZt2hvA805wJm7FIuoArytWJ8o=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -72,6 +67,8 @@ github.com/google/uuid v1.3.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+
 github.com/grpc-ecosystem/grpc-gateway v1.16.0/go.mod h1:BDjrQk3hbvj6Nolgz8mAMFbcEtjT1g+wF4CSlocrBnw=
 github.com/json-iterator/go v1.1.12 h1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnrnM=
 github.com/json-iterator/go v1.1.12/go.mod h1:e30LSqwooZae/UwlEbR2852Gd8hjQvJoHmT4TnhNGBo=
+github.com/mcandeia/dapr v0.0.0-20220927121018-bce54342f9f1 h1:hEQ/5FLi3aq7V1EYU4akPllrBQjj7hlQbBDnSAeFi6Y=
+github.com/mcandeia/dapr v0.0.0-20220927121018-bce54342f9f1/go.mod h1:FxiDyP2AwzSbX+o/R3bRYWxd5W017UyXUnikjKIVOHs=
 github.com/mitchellh/mapstructure v1.5.1-0.20220423185008-bf980b35cac4 h1:BpfhmLKZf+SjVanKKhCgf3bg+511DmU9eDQTen7LLbY=
 github.com/mitchellh/mapstructure v1.5.1-0.20220423185008-bf980b35cac4/go.mod h1:bFUtVrKA4DC2yAKiSyO/QUcy7e+RRV2QTWOzhPopBRo=
 github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=

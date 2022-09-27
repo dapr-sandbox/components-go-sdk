@@ -23,7 +23,6 @@ import (
 
 	"github.com/dapr-sandbox/components-go-sdk/internal"
 
-	"github.com/dapr/dapr/pkg/proto/common/v1"
 	proto "github.com/dapr/dapr/pkg/proto/components/v1"
 
 	"google.golang.org/grpc"
@@ -48,14 +47,14 @@ type store struct {
 }
 
 //nolint:nosnakecase
-var consistencyModels = map[common.StateOptions_StateConsistency]string{
-	common.StateOptions_CONSISTENCY_EVENTUAL:    consistencyEventual,
-	common.StateOptions_CONSISTENCY_STRONG:      consistencyStrong,
-	common.StateOptions_CONSISTENCY_UNSPECIFIED: "",
+var consistencyModels = map[proto.StateOptions_StateConsistency]string{
+	proto.StateOptions_CONSISTENCY_EVENTUAL:    consistencyEventual,
+	proto.StateOptions_CONSISTENCY_STRONG:      consistencyStrong,
+	proto.StateOptions_CONSISTENCY_UNSPECIFIED: "",
 }
 
 //nolint:nosnakecase
-func toConsistency(consistency common.StateOptions_StateConsistency) string {
+func toConsistency(consistency proto.StateOptions_StateConsistency) string {
 	c, ok := consistencyModels[consistency]
 	if !ok {
 		return ""
@@ -64,14 +63,14 @@ func toConsistency(consistency common.StateOptions_StateConsistency) string {
 }
 
 //nolint:nosnakecase
-var concurrencyModels = map[common.StateOptions_StateConcurrency]string{
-	common.StateOptions_CONCURRENCY_FIRST_WRITE: concurrencyFirstWrite,
-	common.StateOptions_CONCURRENCY_LAST_WRITE:  concurrencyLastWrite,
-	common.StateOptions_CONCURRENCY_UNSPECIFIED: "",
+var concurrencyModels = map[proto.StateOptions_StateConcurrency]string{
+	proto.StateOptions_CONCURRENCY_FIRST_WRITE: concurrencyFirstWrite,
+	proto.StateOptions_CONCURRENCY_LAST_WRITE:  concurrencyLastWrite,
+	proto.StateOptions_CONCURRENCY_UNSPECIFIED: "",
 }
 
 //nolint:nosnakecase
-func toConcurrency(concurrency common.StateOptions_StateConcurrency) string {
+func toConcurrency(concurrency proto.StateOptions_StateConcurrency) string {
 	c, ok := concurrencyModels[concurrency]
 	if !ok {
 		return ""
@@ -98,11 +97,11 @@ func (s *store) Features(context.Context, *proto.FeaturesRequest) (*proto.Featur
 func toDeleteRequest(req *proto.DeleteRequest) *contribState.DeleteRequest {
 	return &contribState.DeleteRequest{
 		Key: req.Key,
-		ETag: internal.IfNotNilP(req.Etag, func(f *common.Etag) string {
+		ETag: internal.IfNotNilP(req.Etag, func(f *proto.Etag) string {
 			return f.Value
 		}),
 		Metadata: req.Metadata,
-		Options: internal.IfNotNil(req.Options, func(f *common.StateOptions) contribState.DeleteStateOption {
+		Options: internal.IfNotNil(req.Options, func(f *proto.StateOptions) contribState.DeleteStateOption {
 			return contribState.DeleteStateOption{
 				Concurrency: toConcurrency(f.Concurrency),
 				Consistency: toConsistency(f.Consistency),
@@ -128,8 +127,8 @@ func toGetRequest(req *proto.GetRequest) *contribState.GetRequest {
 func fromGetResponse(res *contribState.GetResponse) *proto.GetResponse {
 	return &proto.GetResponse{
 		Data: res.Data,
-		Etag: internal.IfNotNil(res.ETag, func(etagValue *string) *common.Etag {
-			return &common.Etag{
+		Etag: internal.IfNotNil(res.ETag, func(etagValue *string) *proto.Etag {
+			return &proto.Etag{
 				Value: *etagValue,
 			}
 		}),
@@ -173,12 +172,12 @@ func toSetRequest(req *proto.SetRequest) *contribState.SetRequest {
 	return &contribState.SetRequest{
 		Key:   req.Key,
 		Value: value,
-		ETag: internal.IfNotNilP(req.Etag, func(f *common.Etag) string {
+		ETag: internal.IfNotNilP(req.Etag, func(f *proto.Etag) string {
 			return f.Value
 		}),
 		ContentType: contentType,
 		Metadata:    req.Metadata,
-		Options: internal.IfNotNil(req.Options, func(f *common.StateOptions) contribState.SetStateOption {
+		Options: internal.IfNotNil(req.Options, func(f *proto.StateOptions) contribState.SetStateOption {
 			return contribState.SetStateOption{
 				Concurrency: toConcurrency(f.Concurrency),
 				Consistency: toConsistency(f.Consistency),
@@ -205,8 +204,8 @@ func fromBulkGetResponse(item contribState.BulkGetResponse) *proto.BulkStateItem
 	return &proto.BulkStateItem{
 		Key:  item.Key,
 		Data: item.Data,
-		Etag: internal.IfNotNil(item.ETag, func(etagValue *string) *common.Etag {
-			return &common.Etag{
+		Etag: internal.IfNotNil(item.ETag, func(etagValue *string) *proto.Etag {
+			return &proto.Etag{
 				Value: *etagValue,
 			}
 		}),
@@ -326,8 +325,8 @@ func (s *store) Query(_ context.Context, req *proto.QueryRequest) (*proto.QueryR
 			return &proto.QueryItem{
 				Key:  item.Key,
 				Data: item.Data,
-				Etag: internal.IfNotNil(item.ETag, func(etagValue *string) *common.Etag {
-					return &common.Etag{
+				Etag: internal.IfNotNil(item.ETag, func(etagValue *string) *proto.Etag {
+					return &proto.Etag{
 						Value: *etagValue,
 					}
 				}),

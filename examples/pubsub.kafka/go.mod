@@ -13,7 +13,7 @@ require (
 require (
 	github.com/Shopify/sarama v1.30.0 // indirect
 	github.com/cenkalti/backoff/v4 v4.1.3 // indirect
-	github.com/dapr/dapr v1.8.4-0.20220927025107-d4dceb66b590 // indirect
+	github.com/dapr/dapr v1.8.4-0.20220927170932-1c498253f24b // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/eapache/go-resiliency v1.2.0 // indirect
 	github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21 // indirect
@@ -46,5 +46,3 @@ require (
 	google.golang.org/grpc v1.48.0 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 )
-
-replace github.com/dapr/dapr => github.com/mcandeia/dapr v0.0.0-20220927121018-bce54342f9f1

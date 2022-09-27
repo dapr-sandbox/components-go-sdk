@@ -56,6 +56,8 @@ github.com/cpuguy83/go-md2man/v2 v2.0.0-20190314233015-f79a8a8ca69d/go.mod h1:ma
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/dapr/components-contrib v1.8.0-rc.1.0.20220924063709-b0d267317d47 h1:t/Qkm5HvxsxWGJImUOOLEsiljrBwdceYULbI9eOouS0=
 github.com/dapr/components-contrib v1.8.0-rc.1.0.20220924063709-b0d267317d47/go.mod h1:z/210gfq/Wb6R8Fbe8aliiC7UO3oYO3u2isnfurRx8o=
+github.com/dapr/dapr v1.8.4-0.20220927170932-1c498253f24b h1:H9JqO9HOobWjw30BQc9VlojCNw4V0QPORxCQH8wJOGc=
+github.com/dapr/dapr v1.8.4-0.20220927170932-1c498253f24b/go.mod h1:FxiDyP2AwzSbX+o/R3bRYWxd5W017UyXUnikjKIVOHs=
 github.com/dapr/kit v0.0.2 h1:VNg6RWrBMOdtY0/ZLztyAa/RjyFLaskdO9wt2HIREwk=
 github.com/dapr/kit v0.0.2/go.mod h1:Q4TWm9+vcPZFGehaJUZt2hvA805wJm7FIuoArytWJ8o=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

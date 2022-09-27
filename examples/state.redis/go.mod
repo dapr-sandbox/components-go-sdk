@@ -13,7 +13,7 @@ require (
 require (
 	github.com/agrea/ptr v0.0.0-20180711073057-77a518d99b7b // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
-	github.com/dapr/dapr v1.8.4-0.20220927025107-d4dceb66b590 // indirect
+	github.com/dapr/dapr v1.8.4-0.20220927170932-1c498253f24b // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/go-redis/redis/v8 v8.11.5 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
@@ -31,5 +31,3 @@ require (
 	google.golang.org/grpc v1.48.0 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 )
-
-replace github.com/dapr/dapr => github.com/mcandeia/dapr v0.0.0-20220927121018-bce54342f9f1

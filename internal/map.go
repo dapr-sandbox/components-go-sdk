@@ -55,3 +55,12 @@ func IfNotNil[From any, To any](value *From, mapper func(*From) To) To {
 	}
 	return *v
 }
+
+// ZeroValueIfNil returns the zero value if the variable is nil.
+func ZeroValueIfNil[T any](v *T) T {
+	if v == nil {
+		var zero T
+		return zero
+	}
+	return *v
+}

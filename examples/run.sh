@@ -1,5 +1,5 @@
 #!/bin/bash
-COMPONENT=${1:-memory}
+COMPONENT=${1:-state.memory}
 
 cp $COMPONENT/component.yml components/.
 

@@ -2,4 +2,12 @@ go 1.19
 
 use ./
 
-use ./examples/memory
+use ./examples/state.memory
+
+use ./examples/state.redis
+
+use ./examples/pubsub.kafka
+
+use ./examples/pubsub.redis
+
+use ./examples/pubsub.memory

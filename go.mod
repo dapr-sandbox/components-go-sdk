@@ -16,8 +16,8 @@ require (
 )
 
 require (
-	github.com/dapr/components-contrib v1.8.0-rc.1.0.20220923213414-da5a2fd03a4d
-	github.com/dapr/dapr v1.8.4-0.20220926041503-51289b9249de
+	github.com/dapr/components-contrib v1.8.0-rc.1.0.20220924063709-b0d267317d47
+	github.com/dapr/dapr v1.8.4-0.20220927025107-d4dceb66b590
 	github.com/dapr/kit v0.0.2
 	github.com/google/uuid v1.3.0
 	github.com/pkg/errors v0.9.1

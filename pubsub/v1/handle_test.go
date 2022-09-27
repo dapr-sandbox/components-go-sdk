@@ -164,3 +164,7 @@ func TestHandler(t *testing.T) {
 		assert.Equal(t, int64(1), stream.sendCalled.Load())
 	})
 }
+
+		assert.Equal(t, int64(1), stream.sendCalled.Load())
+	})
+}

@@ -97,3 +97,33 @@ func pullFor(stream proto.PubSub_PullMessagesServer) (pubsubHandler contribPubSu
 		return ackLoop(stream.Context(), tfStream, ackManager)
 	}
 }
+
+		// it only means that the component wasn't able to receive the response back
+		// it could leads in messages being acknowledged without even being pending first
+		// we should ignore this since it will be probably retried by the underlying component.
+		err := tfStream.send(msg)
+		if err != nil {
+			return errors.Wrapf(err, "error when sending message %s to consumer on topic %s", msg.Id, msg.TopicName)
+		}
+
+		select {
+		case err := <-pendingAck:
+			return err
+		case <-ctx.Done():
+			return ErrAckTimeout
+		}
+	}
+}
+
+// pullFor creates a message handler for the given stream.
+func pullFor(stream proto.PubSub_PullMessagesServer) (pubsubHandler contribPubSub.Handler, acknLoop func() error) {
+	tfStream := &grpcThreadSafeStream{
+		sendLock: &sync.Mutex{},
+		recvLock: &sync.Mutex{},
+		stream:   stream,
+	}
+	ackManager := newAckManager()
+	return handler(tfStream, ackManager), func() error {
+		return ackLoop(tfStream, ackManager)
+	}
+}

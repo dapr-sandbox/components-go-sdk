@@ -14,7 +14,8 @@
 version: '3.9'
 services:
   redis:
-    image: 'redislabs/redisearch:latest'
+    image: 'redislabs/rejson:2.0.6'
     ports:
       - '6379:6379'
-    command: redis-server
+    environment:
+      - REDIS_REPLICATION_MODE=master

@@ -2,8 +2,6 @@ module github.com/dapr-sandbox/components-go-sdk/examples/state.redis
 
 go 1.19
 
-replace github.com/dapr/dapr => github.com/mcandeia/dapr v0.0.0-20220928114040-c34d0c15f90b
-
 replace github.com/dapr-sandbox/components-go-sdk => ../../.
 
 require (
@@ -15,7 +13,7 @@ require (
 require (
 	github.com/agrea/ptr v0.0.0-20180711073057-77a518d99b7b // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
-	github.com/dapr/dapr v1.8.4-0.20220927170932-1c498253f24b // indirect
+	github.com/dapr/dapr v1.8.4-0.20220928160359-6a52d590a39d // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/go-redis/redis/v8 v8.11.5 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect

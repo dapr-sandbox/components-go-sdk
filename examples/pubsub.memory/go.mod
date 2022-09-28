@@ -2,8 +2,6 @@ module github.com/dapr-sandbox/components-go-sdk/examples/pubsub.memory
 
 go 1.19
 
-replace github.com/dapr/dapr => github.com/mcandeia/dapr v0.0.0-20220928114040-c34d0c15f90b
-
 replace github.com/dapr-sandbox/components-go-sdk => ../../.
 
 require (
@@ -13,7 +11,7 @@ require (
 )
 
 require (
-	github.com/dapr/dapr v1.8.4-0.20220927170932-1c498253f24b // indirect
+	github.com/dapr/dapr v1.8.4-0.20220928160359-6a52d590a39d // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.1-0.20220423185008-bf980b35cac4 // indirect

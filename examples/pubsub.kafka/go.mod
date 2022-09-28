@@ -2,8 +2,6 @@ module github.com/dapr-sandbox/components-go-sdk/examples/pubsub.kafka
 
 go 1.19
 
-replace github.com/dapr/dapr => github.com/mcandeia/dapr v0.0.0-20220928114040-c34d0c15f90b
-
 replace github.com/dapr-sandbox/components-go-sdk => ../../.
 
 require (
@@ -15,7 +13,7 @@ require (
 require (
 	github.com/Shopify/sarama v1.30.0 // indirect
 	github.com/cenkalti/backoff/v4 v4.1.3 // indirect
-	github.com/dapr/dapr v1.8.4-0.20220927170932-1c498253f24b // indirect
+	github.com/dapr/dapr v1.8.4-0.20220928160359-6a52d590a39d // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/eapache/go-resiliency v1.2.0 // indirect
 	github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21 // indirect

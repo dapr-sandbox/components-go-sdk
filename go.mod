@@ -2,8 +2,6 @@ module github.com/dapr-sandbox/components-go-sdk
 
 go 1.19
 
-replace github.com/dapr/dapr => github.com/mcandeia/dapr v0.0.0-20220928114040-c34d0c15f90b
-
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
@@ -19,7 +17,7 @@ require (
 
 require (
 	github.com/dapr/components-contrib v1.8.0-rc.1.0.20220924063709-b0d267317d47
-	github.com/dapr/dapr v1.8.4-0.20220927170932-1c498253f24b
+	github.com/dapr/dapr v1.8.4-0.20220928160359-6a52d590a39d
 	github.com/dapr/kit v0.0.2
 	github.com/google/uuid v1.3.0
 	github.com/pkg/errors v0.9.1

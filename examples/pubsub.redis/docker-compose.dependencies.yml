@@ -11,19 +11,10 @@
 # limitations under the License.
 #
 
-apiVersion: dapr.io/v1alpha1
-kind: Component
-metadata:
-  name: default
-spec:
-  type: state.pluggable
-  version: v1
-  metadata:
-    - name: redisHost
-      value: redis:6379
-    - name: redisPassword
-      value: ""
-    - name: initTimeout
-      value: 5m
-    - name: timeout
-      value: 100s
+version: '3.9'
+services:
+  redis:
+    image: 'redislabs/redisearch:latest'
+    ports:
+      - '6379:6379'
+    command: redis-server

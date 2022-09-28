@@ -11,6 +11,8 @@ WORKDIR /sdk
 COPY internal internal
 COPY *.go ./
 COPY state state
+COPY bindings bindings
+COPY pubsub pubsub
 COPY go.mod ./
 COPY go.sum ./
 

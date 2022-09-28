@@ -10,20 +10,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-apiVersion: dapr.io/v1alpha1
-kind: Component
-metadata:
-  name: default
-spec:
-  type: state.pluggable
-  version: v1
-  metadata:
-    - name: redisHost
-      value: redis:6379
-    - name: redisPassword
-      value: ""
-    - name: initTimeout
-      value: 5m
-    - name: timeout
-      value: 100s
+version: '3.9'
+services:
+  zookeeper:
+    image: wurstmeister/zookeeper:latest
+    ports:
+      - "2181:2181"
+  kafka:
+    image: wurstmeister/kafka:latest
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: 127.0.0.1
+      KAFKA_CREATE_TOPICS: "binding-topic:1:1"
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181

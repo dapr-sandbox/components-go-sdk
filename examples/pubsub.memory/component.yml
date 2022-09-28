@@ -16,7 +16,7 @@ kind: Component
 metadata:
   name: default
 spec:
-  type: pubsub.kafka
+  type: pubsub.pluggable
   version: v1
   metadata:
     - name: brokers

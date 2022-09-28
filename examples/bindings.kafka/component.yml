@@ -12,9 +12,29 @@
 #
 
 apiVersion: dapr.io/v1alpha1
-kind: PluggableComponent
+kind: Component
 metadata:
-  name: store
+  name: test-topic
 spec:
-  type: state
+  type: bindings.pluggable
+  initTimeout: 1m
   version: v1
+  metadata:
+    # Kafka broker connection setting
+    - name: brokers
+      value: kafka:9092
+    # consumer configuration: topic and consumer group
+    - name: topics
+      value: test-topic
+    - name: consumerGroup
+      value: group1
+    # publisher configuration: topic
+    - name: publishTopic
+      value: test-topic
+    - name: authRequired
+      value: "false"
+      # set specify route
+    - name: route
+      value: /custom-path
+    - name: initialOffset
+      value: oldest

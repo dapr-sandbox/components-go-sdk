@@ -27,7 +27,7 @@ To create your own implementation:
 3. create a `component.yml` (copying from other sources and changing the component-specific metadata)
 4. Run `./run.sh your_folder_goes_here`
 
-This will build your component and bootstrap the dapr runtime with the default options.
+Optionally you can also add a `docker-compose.dependencies.yml` file and specify container dependencies that will be used when starting your app.
 
 ## Getting started
 

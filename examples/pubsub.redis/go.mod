@@ -2,6 +2,8 @@ module github.com/dapr-sandbox/components-go-sdk/examples/pubsub.redis
 
 go 1.19
 
+replace github.com/dapr/dapr => github.com/mcandeia/dapr v0.0.0-20220928114040-c34d0c15f90b
+
 replace github.com/dapr-sandbox/components-go-sdk => ../../.
 
 require (

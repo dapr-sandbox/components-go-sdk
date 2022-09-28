@@ -2,6 +2,8 @@ module github.com/dapr-sandbox/components-go-sdk/examples/state.memory
 
 go 1.19
 
+replace github.com/dapr/dapr => github.com/mcandeia/dapr v0.0.0-20220928114040-c34d0c15f90b
+
 require (
 	github.com/dapr-sandbox/components-go-sdk v0.0.0-00010101000000-000000000000
 	github.com/dapr/components-contrib v1.8.0-rc.1.0.20220924063709-b0d267317d47

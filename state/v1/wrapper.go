@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 
 	contribMetadata "github.com/dapr/components-contrib/metadata"
+	"github.com/dapr/components-contrib/state"
 	contribState "github.com/dapr/components-contrib/state"
 	contribQuery "github.com/dapr/components-contrib/state/query"
 
@@ -38,12 +39,8 @@ const (
 	concurrencyFirstWrite = "first-write"
 )
 
-var defaultStore = &store{}
-
 type store struct {
-	impl          Store
-	transactional TransactionalStore
-	querier       Querier
+	getStateStore func(context.Context) Store
 }
 
 //nolint:nosnakecase
@@ -79,14 +76,14 @@ func toConcurrency(concurrency proto.StateOptions_StateConcurrency) string {
 }
 
 func (s *store) Init(ctx context.Context, initReq *proto.InitRequest) (*proto.InitResponse, error) {
-	return &proto.InitResponse{}, s.impl.Init(contribState.Metadata{
+	return &proto.InitResponse{}, s.getStateStore(ctx).Init(contribState.Metadata{
 		Base: contribMetadata.Base{Properties: initReq.Metadata.Properties},
 	})
 }
 
-func (s *store) Features(context.Context, *proto.FeaturesRequest) (*proto.FeaturesResponse, error) {
+func (s *store) Features(ctx context.Context, _ *proto.FeaturesRequest) (*proto.FeaturesResponse, error) {
 	features := &proto.FeaturesResponse{
-		Features: internal.Map(s.impl.Features(), func(f contribState.Feature) string {
+		Features: internal.Map(s.getStateStore(ctx).Features(), func(f contribState.Feature) string {
 			return string(f)
 		}),
 	}
@@ -110,8 +107,8 @@ func toDeleteRequest(req *proto.DeleteRequest) *contribState.DeleteRequest {
 	}
 }
 
-func (s *store) Delete(_ context.Context, req *proto.DeleteRequest) (*proto.DeleteResponse, error) {
-	return &proto.DeleteResponse{}, s.impl.Delete(toDeleteRequest(req))
+func (s *store) Delete(ctx context.Context, req *proto.DeleteRequest) (*proto.DeleteResponse, error) {
+	return &proto.DeleteResponse{}, s.getStateStore(ctx).Delete(toDeleteRequest(req))
 }
 
 func toGetRequest(req *proto.GetRequest) *contribState.GetRequest {
@@ -139,8 +136,8 @@ func fromGetResponse(res *contribState.GetResponse) *proto.GetResponse {
 	}
 }
 
-func (s *store) Get(_ context.Context, req *proto.GetRequest) (*proto.GetResponse, error) {
-	resp, err := s.impl.Get(toGetRequest(req))
+func (s *store) Get(ctx context.Context, req *proto.GetRequest) (*proto.GetResponse, error) {
+	resp, err := s.getStateStore(ctx).Get(toGetRequest(req))
 	return internal.IfNotNil(resp, fromGetResponse), err
 }
 
@@ -186,16 +183,16 @@ func toSetRequest(req *proto.SetRequest) *contribState.SetRequest {
 	}
 }
 
-func (s *store) Set(_ context.Context, req *proto.SetRequest) (*proto.SetResponse, error) {
-	return &proto.SetResponse{}, s.impl.Set(toSetRequest(req))
+func (s *store) Set(ctx context.Context, req *proto.SetRequest) (*proto.SetResponse, error) {
+	return &proto.SetResponse{}, s.getStateStore(ctx).Set(toSetRequest(req))
 }
 
 func (s *store) Ping(context.Context, *proto.PingRequest) (*proto.PingResponse, error) {
 	return &proto.PingResponse{}, nil
 }
 
-func (s *store) BulkDelete(_ context.Context, req *proto.BulkDeleteRequest) (*proto.BulkDeleteResponse, error) {
-	return &proto.BulkDeleteResponse{}, s.impl.BulkDelete(internal.Map(req.Items, func(delReq *proto.DeleteRequest) contribState.DeleteRequest {
+func (s *store) BulkDelete(ctx context.Context, req *proto.BulkDeleteRequest) (*proto.BulkDeleteResponse, error) {
+	return &proto.BulkDeleteResponse{}, s.getStateStore(ctx).BulkDelete(internal.Map(req.Items, func(delReq *proto.DeleteRequest) contribState.DeleteRequest {
 		return *toDeleteRequest(delReq)
 	}))
 }
@@ -217,8 +214,8 @@ func fromBulkGetResponse(item contribState.BulkGetResponse) *proto.BulkStateItem
 	}
 }
 
-func (s *store) BulkGet(_ context.Context, req *proto.BulkGetRequest) (*proto.BulkGetResponse, error) {
-	got, items, err := s.impl.BulkGet(internal.Map(req.Items, func(getReq *proto.GetRequest) contribState.GetRequest {
+func (s *store) BulkGet(ctx context.Context, req *proto.BulkGetRequest) (*proto.BulkGetResponse, error) {
+	got, items, err := s.getStateStore(ctx).BulkGet(internal.Map(req.Items, func(getReq *proto.GetRequest) contribState.GetRequest {
 		return *toGetRequest(getReq)
 	}))
 	return &proto.BulkGetResponse{
@@ -227,8 +224,8 @@ func (s *store) BulkGet(_ context.Context, req *proto.BulkGetRequest) (*proto.Bu
 	}, err
 }
 
-func (s *store) BulkSet(_ context.Context, req *proto.BulkSetRequest) (*proto.BulkSetResponse, error) {
-	return &proto.BulkSetResponse{}, s.impl.BulkSet(internal.Map(req.Items, func(setReq *proto.SetRequest) contribState.SetRequest {
+func (s *store) BulkSet(ctx context.Context, req *proto.BulkSetRequest) (*proto.BulkSetResponse, error) {
+	return &proto.BulkSetResponse{}, s.getStateStore(ctx).BulkSet(internal.Map(req.Items, func(setReq *proto.SetRequest) contribState.SetRequest {
 		return *toSetRequest(setReq)
 	}))
 }
@@ -252,18 +249,25 @@ func toTransactionalStateOperation(op *proto.TransactionalStateOperation) contri
 	}
 }
 
-func (s *store) Transact(_ context.Context, req *proto.TransactionalStateRequest) (*proto.TransactionalStateResponse, error) {
-	if s.transactional == nil {
-		return &proto.TransactionalStateResponse{}, status.Errorf(codes.Unimplemented, "method Multi not implemented")
+func (s *store) Transact(ctx context.Context, req *proto.TransactionalStateRequest) (*proto.TransactionalStateResponse, error) {
+	transactional, ok := s.getStateStore(ctx).(state.TransactionalStore)
+
+	if transactional == nil || !ok {
+		return nil, status.Errorf(codes.Unimplemented, "method Transact not implemented")
 	}
 
-	return &proto.TransactionalStateResponse{}, s.transactional.Multi(&contribState.TransactionalStateRequest{
+	return &proto.TransactionalStateResponse{}, transactional.Multi(&contribState.TransactionalStateRequest{
 		Operations: internal.Map(req.Operations, toTransactionalStateOperation),
 		Metadata:   req.Metadata,
 	})
 }
 
-func (s *store) Query(_ context.Context, req *proto.QueryRequest) (*proto.QueryResponse, error) {
+func (s *store) Query(ctx context.Context, req *proto.QueryRequest) (*proto.QueryResponse, error) {
+	querier, ok := s.getStateStore(ctx).(state.Querier)
+	if querier == nil || !ok {
+		return nil, status.Errorf(codes.Unimplemented, "method Query not implemented")
+	}
+
 	filters, err := internal.MapValuesErr(req.Query.Filter, func(f *anypb.Any) (any, error) {
 		var v any
 		return v, json.Unmarshal(f.Value, &v)
@@ -312,7 +316,7 @@ func (s *store) Query(_ context.Context, req *proto.QueryRequest) (*proto.QueryR
 		return nil, err
 	}
 
-	resp, err := s.querier.Query(&contribState.QueryRequest{
+	resp, err := querier.Query(&contribState.QueryRequest{
 		Query:    nq,
 		Metadata: req.Metadata,
 	})
@@ -341,16 +345,11 @@ func (s *store) Query(_ context.Context, req *proto.QueryRequest) (*proto.QueryR
 	}, nil
 }
 
-func Register(server *grpc.Server, store contribState.Store) {
-	defaultStore.impl = store
-	proto.RegisterStateStoreServer(server, defaultStore)
-	if trtnl, ok := store.(contribState.TransactionalStore); ok {
-		proto.RegisterTransactionalStateStoreServer(server, defaultStore)
-		defaultStore.transactional = trtnl
+func Register(server *grpc.Server, getStateStore func(context.Context) Store) {
+	store := &store{
+		getStateStore: getStateStore,
 	}
-
-	if querier, ok := store.(contribState.Querier); ok {
-		proto.RegisterQueriableStateStoreServer(server, defaultStore)
-		defaultStore.querier = querier
-	}
+	proto.RegisterStateStoreServer(server, store)
+	proto.RegisterTransactionalStateStoreServer(server, store)
+	proto.RegisterQueriableStateStoreServer(server, store)
 }

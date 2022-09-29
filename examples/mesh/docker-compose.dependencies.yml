@@ -11,19 +11,23 @@
 # limitations under the License.
 #
 
-apiVersion: dapr.io/v1alpha1
-kind: Component
-metadata:
-  name: default
-spec:
-  type: pubsub.memory-pluggable
-  version: v1
-  metadata:
-    - name: brokers
-      value: kafka:9095
-    - name: consumerGroup
-      value: pubsubgroup1
-    - name: authRequired
-      value: "false"
-    - name: initialOffset
-      value: oldest
+version: '3.9'
+services:
+  redis:
+    image: 'redislabs/rejson:2.0.6'
+    ports:
+      - '6379:6379'
+    environment:
+      - REDIS_REPLICATION_MODE=master
+  zookeeper:
+    image: wurstmeister/zookeeper:latest
+    ports:
+      - "2181:2181"
+  kafka:
+    image: wurstmeister/kafka:latest
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: 127.0.0.1
+      KAFKA_CREATE_TOPICS: "binding-topic:1:1"
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181

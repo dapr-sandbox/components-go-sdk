@@ -36,7 +36,7 @@ var (
 
 type pubsub struct {
 	proto.UnimplementedPubSubServer
-	impl PubSub
+	getPubSub func(context.Context) PubSub
 }
 
 // Establishes a stream with the server, which sends messages down to the
@@ -62,7 +62,7 @@ func (s *pubsub) PullMessages(stream proto.PubSub_PullMessagesServer) error {
 
 	handler, startAckLoop := pullFor(stream)
 
-	err = s.impl.Subscribe(ctx, contribPubSub.SubscribeRequest{
+	err = s.getPubSub(ctx).Subscribe(ctx, contribPubSub.SubscribeRequest{
 		Topic:    subscription.Name,
 		Metadata: subscription.Metadata,
 	}, handler)
@@ -74,15 +74,15 @@ func (s *pubsub) PullMessages(stream proto.PubSub_PullMessagesServer) error {
 	return startAckLoop()
 }
 
-func (s *pubsub) Init(_ context.Context, initReq *proto.PubSubInitRequest) (*proto.PubSubInitResponse, error) {
-	return &proto.PubSubInitResponse{}, s.impl.Init(contribPubSub.Metadata{
+func (s *pubsub) Init(ctx context.Context, initReq *proto.PubSubInitRequest) (*proto.PubSubInitResponse, error) {
+	return &proto.PubSubInitResponse{}, s.getPubSub(ctx).Init(contribPubSub.Metadata{
 		Base: contribMetadata.Base{Properties: initReq.Metadata.Properties},
 	})
 }
 
-func (s *pubsub) Features(context.Context, *proto.FeaturesRequest) (*proto.FeaturesResponse, error) {
+func (s *pubsub) Features(ctx context.Context, _ *proto.FeaturesRequest) (*proto.FeaturesResponse, error) {
 	features := &proto.FeaturesResponse{
-		Features: internal.Map(s.impl.Features(), func(f contribPubSub.Feature) string {
+		Features: internal.Map(s.getPubSub(ctx).Features(), func(f contribPubSub.Feature) string {
 			return string(f)
 		}),
 	}
@@ -90,8 +90,8 @@ func (s *pubsub) Features(context.Context, *proto.FeaturesRequest) (*proto.Featu
 	return features, nil
 }
 
-func (s *pubsub) Publish(_ context.Context, req *proto.PublishRequest) (*proto.PublishResponse, error) {
-	return &proto.PublishResponse{}, s.impl.Publish(&contribPubSub.PublishRequest{
+func (s *pubsub) Publish(ctx context.Context, req *proto.PublishRequest) (*proto.PublishResponse, error) {
+	return &proto.PublishResponse{}, s.getPubSub(ctx).Publish(&contribPubSub.PublishRequest{
 		Data:        req.Data,
 		PubsubName:  req.PubsubName,
 		Topic:       req.Topic,
@@ -105,7 +105,7 @@ func (s *pubsub) Ping(context.Context, *proto.PingRequest) (*proto.PingResponse,
 }
 
 // Register the pubsub implementation for the component gRPC service.
-func Register(server *grpc.Server, ps PubSub) {
-	defaultPubSub.impl = ps
+func Register(server *grpc.Server, psFactory func(context.Context) PubSub) {
+	defaultPubSub.getPubSub = psFactory
 	proto.RegisterPubSubServer(server, defaultPubSub)
 }

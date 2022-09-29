@@ -15,6 +15,7 @@ package main
 
 import (
 	dapr "github.com/dapr-sandbox/components-go-sdk"
+	"github.com/dapr-sandbox/components-go-sdk/state/v1"
 	im "github.com/dapr/components-contrib/state/in-memory"
 	"github.com/dapr/kit/logger"
 )
@@ -22,5 +23,8 @@ import (
 var log = logger.NewLogger("in-memory-pluggable")
 
 func main() {
-	dapr.MustRun(dapr.UseStateStore(im.NewInMemoryStateStore(log)))
+	dapr.Register("memory-pluggable", dapr.WithStateStore(func() state.Store {
+		return im.NewInMemoryStateStore(log)
+	}))
+	dapr.MustRun()
 }

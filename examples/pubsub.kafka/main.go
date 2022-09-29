@@ -15,6 +15,7 @@ package main
 
 import (
 	dapr "github.com/dapr-sandbox/components-go-sdk"
+	"github.com/dapr-sandbox/components-go-sdk/pubsub/v1"
 	"github.com/dapr/components-contrib/pubsub/kafka"
 	"github.com/dapr/kit/logger"
 )
@@ -22,5 +23,8 @@ import (
 var log = logger.NewLogger("kafka-pluggable")
 
 func main() {
-	dapr.MustRun(dapr.UsePubSub(kafka.NewKafka(log)))
+	dapr.Register("kafka-pluggable", dapr.WithPubSub(func() pubsub.PubSub {
+		return kafka.NewKafka(log)
+	}))
+	dapr.MustRun()
 }

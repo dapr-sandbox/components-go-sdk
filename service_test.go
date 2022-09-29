@@ -25,7 +25,7 @@ func TestServiceRun(t *testing.T) {
 	})
 
 	t.Run("run should return an when no component was specified", func(t *testing.T) {
-		t.Setenv(unixSocketPathEnvVar, "/tmp/fake.sock")
+		t.Setenv(unixSocketFolderPathEnvVar, "/tmp")
 		assert.NotNil(t, Run())
 	})
 }

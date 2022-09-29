@@ -15,6 +15,7 @@ package main
 
 import (
 	dapr "github.com/dapr-sandbox/components-go-sdk"
+	"github.com/dapr-sandbox/components-go-sdk/pubsub/v1"
 	memory "github.com/dapr/components-contrib/pubsub/in-memory"
 	"github.com/dapr/kit/logger"
 )
@@ -22,5 +23,8 @@ import (
 var log = logger.NewLogger("memory-pubsub-pluggable")
 
 func main() {
-	dapr.MustRun(dapr.UsePubSub(memory.New(log)))
+	dapr.Register("memory-pluggable", dapr.WithPubSub(func() pubsub.PubSub {
+		return memory.New(log)
+	}))
+	dapr.MustRun()
 }

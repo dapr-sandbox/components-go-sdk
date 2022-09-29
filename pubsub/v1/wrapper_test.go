@@ -152,7 +152,7 @@ func TestPubSubPullMessages(t *testing.T) {
 			subscribeErr: fakeSubsErr,
 		}
 		ps := &pubsub{
-			impl: impl,
+			getPubSub: func(_ context.Context) PubSub { return impl },
 		}
 		recvChan := make(chan *fakeRecvResp, 1)
 		recvChan <- &fakeRecvResp{
@@ -191,7 +191,7 @@ func TestPubSubPullMessages(t *testing.T) {
 			subscribeCtx: context.Background(),
 		}
 		ps := &pubsub{
-			impl: impl,
+			getPubSub: func(_ context.Context) PubSub { return impl },
 		}
 		recvChan := make(chan *fakeRecvResp, 3)
 		recvChan <- &fakeRecvResp{
@@ -237,7 +237,7 @@ func TestPubSub(t *testing.T) {
 			featuresResp: []contribPubSub.Feature{fakeFeature},
 		}
 		ps := &pubsub{
-			impl: impl,
+			getPubSub: func(_ context.Context) PubSub { return impl },
 		}
 
 		resp, err := ps.Features(context.Background(), &proto.FeaturesRequest{})
@@ -249,7 +249,7 @@ func TestPubSub(t *testing.T) {
 	t.Run("publish should call impl publish", func(t *testing.T) {
 		impl := &fakePubSubImpl{}
 		ps := &pubsub{
-			impl: impl,
+			getPubSub: func(_ context.Context) PubSub { return impl },
 		}
 		_, err := ps.Publish(context.Background(), &proto.PublishRequest{})
 		require.NoError(t, err)

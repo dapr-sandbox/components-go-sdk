@@ -14,13 +14,51 @@
 apiVersion: dapr.io/v1alpha1
 kind: Component
 metadata:
-  name: default
+  name: statestore-default
 spec:
-  type: pubsub.memory-pluggable
+  type: state.redis-pluggable
+  version: v1
+  metadata:
+    - name: redisHost
+      value: redis:6379
+    - name: redisPassword
+      value: ""
+    - name: initTimeout
+      value: 5m
+    - name: timeout
+      value: 100s
+---
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: pubsub-default
+spec:
+  type: pubsub.redis-pluggable
+  version: v1
+  metadata:
+    - name: redisHost
+      value: redis:6379
+    - name: redisPassword
+      value: ""
+    - name: consumerID
+      value: testConsumer
+    - name: processingTimeout
+      value: 5s
+    - name: redeliverInterval
+      value: 1s
+    - name: concurrency
+      value: 1
+---
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: pubsub-kafka
+spec:
+  type: pubsub.kafka-pluggable
   version: v1
   metadata:
     - name: brokers
-      value: kafka:9095
+      value: kafka:9092
     - name: consumerGroup
       value: pubsubgroup1
     - name: authRequired

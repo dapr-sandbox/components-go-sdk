@@ -25,15 +25,13 @@ import (
 
 var inputLogger = logger.NewLogger("inputbinding-component")
 
-var defaultInputBinding = &inputBinding{}
-
 type inputBinding struct {
 	proto.UnimplementedInputBindingServer
-	impl InputBinding
+	getInputBinding func(context.Context) InputBinding
 }
 
-func (in *inputBinding) Init(_ context.Context, req *proto.InputBindingInitRequest) (*proto.InputBindingInitResponse, error) {
-	return &proto.InputBindingInitResponse{}, in.impl.Init(bindings.Metadata{
+func (in *inputBinding) Init(ctx context.Context, req *proto.InputBindingInitRequest) (*proto.InputBindingInitResponse, error) {
+	return &proto.InputBindingInitResponse{}, in.getInputBinding(ctx).Init(bindings.Metadata{
 		Base: metadata.Base{
 			Properties: req.Metadata.Properties,
 		},
@@ -46,7 +44,7 @@ func (in *inputBinding) Read(stream proto.InputBinding_ReadServer) error {
 
 	handler, startAckLoop := streamReader(stream)
 
-	err := in.impl.Read(ctx, handler)
+	err := in.getInputBinding(ctx).Read(ctx, handler)
 
 	if err != nil {
 		return err
@@ -60,7 +58,8 @@ func (in *inputBinding) Ping(context.Context, *proto.PingRequest) (*proto.PingRe
 }
 
 // RegisterInput the inputbinding implementation for the component gRPC service.
-func RegisterInput(server *grpc.Server, in InputBinding) {
-	defaultInputBinding.impl = in
-	proto.RegisterInputBindingServer(server, defaultInputBinding)
+func RegisterInput(server *grpc.Server, getInputBinding func(context.Context) InputBinding) {
+	inputBinding := &inputBinding{}
+	inputBinding.getInputBinding = getInputBinding
+	proto.RegisterInputBindingServer(server, inputBinding)
 }

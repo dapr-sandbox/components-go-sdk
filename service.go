@@ -18,28 +18,37 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
-// ErrSocketNotDefined is returned when the env variable `DAPR_COMPONENT_SOCKET_PATH` is not set
-var ErrSocketNotDefined = errors.New("socket env `DAPR_COMPONENT_SOCKET_PATH` must be set")
+var (
+	// ErrNoComponentsRegistered is returned when none components was registered.
+	ErrNoComponentsRegistered = errors.New("none components was registered")
+)
 
 const (
-	unixSocketPathEnvVar = "DAPR_COMPONENT_SOCKET_PATH"
+	unixSocketFolderPathEnvVar = "DAPR_COMPONENT_SOCKET_FOLDER"
+	defaultSocketFolder        = "/tmp/dapr-components-sockets"
 )
 
 // makeAbortChan Generates a chan bool that automatically gets closed when the process
 // receives a SIGINT or SIGTERM.
-func makeAbortChan() chan struct{} {
+func makeAbortChan(done chan struct{}) chan struct{} {
 	abortChan := make(chan struct{})
 	sigChan := make(chan os.Signal, 1)
 
 	go func() {
-		<-sigChan
-		close(abortChan)
+		select {
+		case <-sigChan:
+			close(abortChan)
+		case <-done:
+			close(abortChan)
+
+		}
 	}()
 
 	signal.Notify(sigChan,
@@ -51,13 +60,7 @@ func makeAbortChan() chan struct{} {
 	return abortChan
 }
 
-// Run starts the component server with the given options.
-func Run(opts ...Option) error {
-	socket, ok := os.LookupEnv(unixSocketPathEnvVar)
-	if !ok {
-		return ErrSocketNotDefined
-	}
-
+func runComponent(socket string, opts *componentsOpts, abortChan chan struct{}) error {
 	// remove socket if it is already created.
 	if err := os.Remove(socket); err != nil && !os.IsNotExist(err) {
 		return err
@@ -72,30 +75,54 @@ func Run(opts ...Option) error {
 
 	defer lis.Close()
 
-	abort := makeAbortChan()
-	go func() { // must close listener to abort while trying to accept connection
-		<-abort
-		lis.Close()
-	}()
-
-	svcOpts := &componentOpts{}
-	for _, opt := range opts {
-		opt(svcOpts)
-	}
-
 	server := grpc.NewServer()
 
-	if err = svcOpts.apply(server); err != nil {
+	if err = opts.apply(server); err != nil {
 		return err
 	}
+	go func() {
+		<-abortChan
+		lis.Close()
+	}()
 
 	reflection.Register(server)
 	return server.Serve(lis)
 }
 
+// Run starts the component server.
+func Run() error {
+	socketFolder, ok := os.LookupEnv(unixSocketFolderPathEnvVar)
+	if !ok {
+		socketFolder = defaultSocketFolder
+	}
+	if len(factories) == 0 {
+		return ErrNoComponentsRegistered
+	}
+	done := make(chan struct{})
+	abort := makeAbortChan(done)
+
+	for component, opts := range factories {
+		socket := filepath.Join(socketFolder, component+".sock")
+		go func(opts *componentsOpts) {
+			err := runComponent(socket, opts, abort)
+			if err != nil {
+				svcLogger.Errorf("aborting due to an error %v", err)
+				done <- struct{}{}
+			}
+		}(opts)
+	}
+
+	select {
+	case <-done:
+		return nil
+	case <-abort:
+		return nil
+	}
+}
+
 // MustRun same as run but panics on error
-func MustRun(opts ...Option) {
-	if err := Run(opts...); err != nil {
+func MustRun() {
+	if err := Run(); err != nil {
 		panic(err)
 	}
 }

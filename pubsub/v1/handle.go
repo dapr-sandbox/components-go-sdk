@@ -16,7 +16,6 @@ package pubsub
 import (
 	"context"
 	"io"
-	"time"
 
 	"github.com/dapr-sandbox/components-go-sdk/internal"
 	contribPubSub "github.com/dapr/components-contrib/pubsub"
@@ -38,12 +37,7 @@ func ackLoop(streamCtx context.Context, tfStream internal.ThreadSafeStream[proto
 		}
 
 		if err != nil {
-			// FIXME
-			// should we continue without sleep ?
-			// should we stop and cancel everything?
-			pubsubLogger.Errorf("error %v when trying to receive ack, sleeping 5 seconds", err)
-			time.Sleep(time.Second * 5)
-			continue
+			return err
 		}
 
 		var ackError error

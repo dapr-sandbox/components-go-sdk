@@ -243,7 +243,7 @@ func TestPubSub(t *testing.T) {
 		resp, err := ps.Features(context.Background(), &proto.FeaturesRequest{})
 		require.NoError(t, err)
 		assert.Equal(t, int64(1), impl.featuresCalled.Load())
-		assert.Len(t, resp.Feature, 1)
+		assert.Len(t, resp.Features, 1)
 	})
 
 	t.Run("publish should call impl publish", func(t *testing.T) {

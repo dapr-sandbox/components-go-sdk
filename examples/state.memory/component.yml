@@ -16,6 +16,6 @@ kind: Component
 metadata:
   name: default
 spec:
-  type: state.store
+  type: state.pluggable
   version: v1
   initTimeout: 10s

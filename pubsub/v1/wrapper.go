@@ -82,7 +82,7 @@ func (s *pubsub) Init(_ context.Context, initReq *proto.PubSubInitRequest) (*pro
 
 func (s *pubsub) Features(context.Context, *proto.FeaturesRequest) (*proto.FeaturesResponse, error) {
 	features := &proto.FeaturesResponse{
-		Feature: internal.Map(s.impl.Features(), func(f contribPubSub.Feature) string {
+		Features: internal.Map(s.impl.Features(), func(f contribPubSub.Feature) string {
 			return string(f)
 		}),
 	}

@@ -34,14 +34,25 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - component: bindings.kafka
+            type: bindings
+            cmd: go run examples/bindings.kafka/main.go &
+            operations: |
+              - create
+              - operations
+            metadata: |
+              publishTopic: binding-topic
+              topics: binding-topic
+              brokers: localhost:9092
+              consumerGroup: pubsubgroup1
+              authRequired: "false"
+              initialOffset: oldest
           - component: pubsub.memory
             type: pubsub
             cmd: go run examples/pubsub.memory/main.go &
-            dependencies: [go]
           - component: pubsub.redis
             type: pubsub
             cmd: go run examples/pubsub.redis/main.go &
-            dependencies: [go, redis]
             test_config: |
               checkInOrderProcessing: false
             metadata: |
@@ -54,7 +65,6 @@ jobs:
           - component: pubsub.kafka
             type: pubsub
             cmd: go run examples/pubsub.kafka/main.go &
-            dependencies: [go, kafka]
             metadata: |
               brokers: localhost:9092
               consumerGroup: pubsubgroup1
@@ -63,28 +73,8 @@ jobs:
           - component: state.redis
             type: state
             cmd: go run examples/state.redis/main.go &
-            dependencies: [go, redis]
             metadata: |
               redisHost: localhost:6379
-              redisPassword: ""
-              queryIndexes: |
-                [
-                  {
-                    "name": "qIndx",
-                    "indexes": [
-                      {
-                        "key": "message",
-                        "type": "TEXT"
-                      }
-                    ]
-                  }
-                ]
-          - component: Redis Docker
-            dependencies: []
-            type: state
-            cmd: docker-compose -f ./.github/infrastructure/docker-compose-redis.yaml -p redis up -d
-            metadata: |
-              redisHost: redis:6379
               redisPassword: ""
               queryIndexes: |
                 [
@@ -102,7 +92,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: setup go
-        if: contains(matrix.dependencies, 'go')
         uses: actions/setup-go@v3
         with:
           go-version: ${{ env.GOVER }}
@@ -110,15 +99,13 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      - name: Run Redis Container
-        if: contains(matrix.dependencies, 'redis')
+      - name: Run ${{matrix.component}} dependencies
         shell: bash
-        run: docker run -d -p 6379:6379 -e REDIS_REPLICATION_MODE=master redislabs/rejson:2.0.6
-
-      - name: Run Kafka Container
-        if: contains(matrix.dependencies, 'kafka')
-        shell: bash
-        run: docker-compose -f ./.github/infrastructure/docker-compose-kafka-only.yaml -p kafka up -d
+        run: |
+          DEPENDENCIES=examples/${{matrix.component}}/docker-compose.dependencies.yml
+          if [ -e $DEPENDENCIES ]; then
+              docker-compose -f $DEPENDENCIES up -d
+          fi
 
       - name: Run ${{matrix.component}} component
         shell: bash

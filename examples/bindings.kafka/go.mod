@@ -1,4 +1,4 @@
-module github.com/dapr-sandbox/components-go-sdk/examples/pubsub.kafka
+module github.com/dapr-sandbox/components-go-sdk/examples/bindings.kafka
 
 go 1.19
 

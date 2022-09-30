@@ -16,14 +16,18 @@ kind: Component
 metadata:
   name: default
 spec:
-  type: pubsub.kafka
+  type: pubsub.pluggable
   version: v1
   metadata:
-    - name: brokers
-      value: kafka:9095
-    - name: consumerGroup
-      value: pubsubgroup1
-    - name: authRequired
-      value: "false"
-    - name: initialOffset
-      value: oldest
+    - name: redisHost
+      value: redis:6379
+    - name: redisPassword
+      value: ""
+    - name: consumerID
+      value: testConsumer
+    - name: processingTimeout
+      value: 5s
+    - name: redeliverInterval
+      value: 1s
+    - name: concurrency
+      value: 1

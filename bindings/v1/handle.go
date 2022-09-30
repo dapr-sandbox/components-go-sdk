@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package pubsub
+package bindings
 
 import (
 	"context"
@@ -19,15 +19,20 @@ import (
 	"time"
 
 	"github.com/dapr-sandbox/components-go-sdk/internal"
-	contribPubSub "github.com/dapr/components-contrib/pubsub"
+	contribBindings "github.com/dapr/components-contrib/bindings"
 	proto "github.com/dapr/dapr/pkg/proto/components/v1"
 	"github.com/pkg/errors"
 )
 
+type handleResponse struct {
+	data []byte
+	err  error
+}
+
 var ErrAckTimeout = errors.New("ack has timed out")
 
 // ackLoop starts an active ack loop reciving acks from client.
-func ackLoop(streamCtx context.Context, tfStream internal.ThreadSafeStream[proto.PullMessagesResponse, proto.PullMessagesRequest], ackManager *internal.AcknowledgementManager[error]) error {
+func ackLoop(streamCtx context.Context, tfStream internal.ThreadSafeStream[proto.ReadResponse, proto.ReadRequest], ackManager *internal.AcknowledgementManager[*handleResponse]) error {
 	for {
 		if streamCtx.Err() != nil {
 			return streamCtx.Err()
@@ -41,34 +46,36 @@ func ackLoop(streamCtx context.Context, tfStream internal.ThreadSafeStream[proto
 			// FIXME
 			// should we continue without sleep ?
 			// should we stop and cancel everything?
-			pubsubLogger.Errorf("error %v when trying to receive ack, sleeping 5 seconds", err)
+			inputLogger.Errorf("error %v when trying to receive ack, sleeping 5 seconds", err)
 			time.Sleep(time.Second * 5)
 			continue
 		}
 
 		var ackError error
 
-		if ack.AckError != nil {
-			ackError = errors.New(ack.AckError.Message)
+		if ack.ResponseError != nil {
+			ackError = errors.New(ack.ResponseError.Message)
 		}
-		if err := ackManager.Ack(ack.AckMessageId, ackError); err != nil {
-			pubsubLogger.Warnf("error %v when trying to notify ack", err)
+		if err := ackManager.Ack(ack.MessageId, &handleResponse{
+			data: ack.ResponseData,
+			err:  ackError,
+		}); err != nil {
+			inputLogger.Warnf("error %v when trying to notify ack", err)
 		}
 	}
 }
 
 // handler build a pubsub handler using the given threadsafe stream and the ack manager.
-func handler(tfStream internal.ThreadSafeStream[proto.PullMessagesResponse, proto.PullMessagesRequest], ackManager *internal.AcknowledgementManager[error]) contribPubSub.Handler {
-	return func(ctx context.Context, contribMsg *contribPubSub.NewMessage) error {
+func handler(tfStream internal.ThreadSafeStream[proto.ReadResponse, proto.ReadRequest], ackManager *internal.AcknowledgementManager[*handleResponse]) contribBindings.Handler {
+	return func(ctx context.Context, contribMsg *contribBindings.ReadResponse) ([]byte, error) {
 		msgID, pendingAck, cleanup := ackManager.Get()
 		defer cleanup()
 
-		msg := &proto.PullMessagesResponse{
+		msg := &proto.ReadResponse{
 			Data:        contribMsg.Data,
-			TopicName:   contribMsg.Topic,
 			Metadata:    contribMsg.Metadata,
 			ContentType: internal.ZeroValueIfNil(contribMsg.ContentType),
-			Id:          msgID,
+			MessageId:   msgID,
 		}
 
 		// in case of message can't be sent it does not mean that the sidecar didn't receive the message
@@ -77,22 +84,22 @@ func handler(tfStream internal.ThreadSafeStream[proto.PullMessagesResponse, prot
 		// we should ignore this since it will be probably retried by the underlying component.
 		err := tfStream.Send(msg)
 		if err != nil {
-			return errors.Wrapf(err, "error when sending message %s to consumer on topic %s", msg.Id, msg.TopicName)
+			return nil, errors.Wrapf(err, "error when sending message %s", msg.MessageId)
 		}
 
 		select {
-		case err := <-pendingAck:
-			return err
+		case resp := <-pendingAck:
+			return resp.data, resp.err
 		case <-ctx.Done():
-			return ErrAckTimeout
+			return nil, ErrAckTimeout
 		}
 	}
 }
 
-// pullFor creates a message handler for the given stream.
-func pullFor(stream proto.PubSub_PullMessagesServer) (pubsubHandler contribPubSub.Handler, acknLoop func() error) {
-	tfStream := internal.NewGRPCThreadSafeStream[proto.PullMessagesResponse, proto.PullMessagesRequest](stream)
-	ackManager := internal.NewAckManager[error]()
+// streamReader creates a message handler for the given stream.
+func streamReader(stream proto.InputBinding_ReadServer) (bindingsHandler contribBindings.Handler, acknLoop func() error) {
+	tfStream := internal.NewGRPCThreadSafeStream[proto.ReadResponse, proto.ReadRequest](stream)
+	ackManager := internal.NewAckManager[*handleResponse]()
 	return handler(tfStream, ackManager), func() error {
 		return ackLoop(stream.Context(), tfStream, ackManager)
 	}

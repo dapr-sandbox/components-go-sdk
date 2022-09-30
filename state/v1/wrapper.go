@@ -86,7 +86,7 @@ func (s *store) Init(ctx context.Context, initReq *proto.InitRequest) (*proto.In
 
 func (s *store) Features(context.Context, *proto.FeaturesRequest) (*proto.FeaturesResponse, error) {
 	features := &proto.FeaturesResponse{
-		Feature: internal.Map(s.impl.Features(), func(f contribState.Feature) string {
+		Features: internal.Map(s.impl.Features(), func(f contribState.Feature) string {
 			return string(f)
 		}),
 	}

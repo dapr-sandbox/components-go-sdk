@@ -22,8 +22,9 @@ import (
 
 const metadataInstanceID = "x-component-instance"
 
-// poolFor returns a pool that creates and store new instances based on component instance metadata header.
-func poolFor[TComponent any](new func() TComponent) func(context.Context) TComponent {
+// mux returns a function that creates and store new instances based on `x-component-instance` metadata header.
+// when no component instance is provided so a default instance is used instead.
+func mux[TComponent any](new func() TComponent) func(context.Context) TComponent {
 	instances := sync.Map{}
 	firstLoad := sync.Mutex{}
 	return func(ctx context.Context) TComponent {

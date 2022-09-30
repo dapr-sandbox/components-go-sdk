@@ -42,7 +42,7 @@ type option = func(*componentsOpts)
 func WithPubSub(factory func() pubsub.PubSub) option {
 	return func(cf *componentsOpts) {
 		cf.useGrpcServer = append(cf.useGrpcServer, func(s *grpc.Server) {
-			pubsub.Register(s, poolFor(factory))
+			pubsub.Register(s, mux(factory))
 		})
 	}
 }
@@ -51,7 +51,7 @@ func WithPubSub(factory func() pubsub.PubSub) option {
 func WithStateStore(factory func() state.Store) option {
 	return func(cf *componentsOpts) {
 		cf.useGrpcServer = append(cf.useGrpcServer, func(s *grpc.Server) {
-			state.Register(s, poolFor(factory))
+			state.Register(s, mux(factory))
 		})
 	}
 }
@@ -60,7 +60,7 @@ func WithStateStore(factory func() state.Store) option {
 func WithInputBinding(factory func() bindings.InputBinding) option {
 	return func(cf *componentsOpts) {
 		cf.useGrpcServer = append(cf.useGrpcServer, func(s *grpc.Server) {
-			bindings.RegisterInput(s, poolFor(factory))
+			bindings.RegisterInput(s, mux(factory))
 		})
 	}
 }
@@ -69,7 +69,7 @@ func WithInputBinding(factory func() bindings.InputBinding) option {
 func WithOutputBinding(factory func() bindings.OutputBinding) option {
 	return func(cf *componentsOpts) {
 		cf.useGrpcServer = append(cf.useGrpcServer, func(s *grpc.Server) {
-			bindings.RegisterOutput(s, poolFor(factory))
+			bindings.RegisterOutput(s, mux(factory))
 		})
 	}
 }

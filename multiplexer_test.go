@@ -21,39 +21,39 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-func TestPool(t *testing.T) {
-	t.Run("pool should use default instance when metadata is not present", func(t *testing.T) {
+func TestMultiplexer(t *testing.T) {
+	t.Run("mux should use default instance when metadata is not present", func(t *testing.T) {
 		called := 0
 		fakeFactory := func() int {
 			called++
 			return 0
 		}
-		factory := poolFor(fakeFactory)
+		factory := mux(fakeFactory)
 		factory(context.TODO())
 		assert.Equal(t, 1, called)
 		factory(context.TODO())
 		assert.Equal(t, 1, called)
 	})
-	t.Run("pool should use default instance when metadata is present but no instance id is provided", func(t *testing.T) {
+	t.Run("mux should use default instance when metadata is present but no instance id is provided", func(t *testing.T) {
 		called := 0
 		fakeFactory := func() int {
 			called++
 			return 0
 		}
-		factory := poolFor(fakeFactory)
+		factory := mux(fakeFactory)
 
 		factory(metadata.NewIncomingContext(context.TODO(), metadata.Pairs("a", "b")))
 		assert.Equal(t, 1, called)
 		factory(metadata.NewIncomingContext(context.TODO(), metadata.Pairs("a", "b")))
 		assert.Equal(t, 1, called)
 	})
-	t.Run("pool should reuse created instances when instance id is provided", func(t *testing.T) {
+	t.Run("mux should reuse created instances when instance id is provided", func(t *testing.T) {
 		called := 0
 		fakeFactory := func() int {
 			called++
 			return 0
 		}
-		factory := poolFor(fakeFactory)
+		factory := mux(fakeFactory)
 
 		factory(metadata.NewIncomingContext(context.TODO(), metadata.Pairs(metadataInstanceID, "x")))
 		assert.Equal(t, 1, called)

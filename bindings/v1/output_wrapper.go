@@ -29,11 +29,11 @@ var outputLogger = logger.NewLogger("outputbinding-component")
 
 type outputBinding struct {
 	proto.UnimplementedOutputBindingServer
-	getOutputBinding func(context.Context) OutputBinding
+	getInstance func(context.Context) OutputBinding
 }
 
 func (out *outputBinding) Init(ctx context.Context, req *proto.OutputBindingInitRequest) (*proto.OutputBindingInitResponse, error) {
-	return &proto.OutputBindingInitResponse{}, out.getOutputBinding(ctx).Init(contribBindings.Metadata{
+	return &proto.OutputBindingInitResponse{}, out.getInstance(ctx).Init(contribBindings.Metadata{
 		Base: metadata.Base{
 			Properties: req.Metadata.Properties,
 		},
@@ -41,7 +41,7 @@ func (out *outputBinding) Init(ctx context.Context, req *proto.OutputBindingInit
 }
 
 func (out *outputBinding) Invoke(ctx context.Context, req *proto.InvokeRequest) (*proto.InvokeResponse, error) {
-	resp, err := out.getOutputBinding(ctx).Invoke(ctx, &contribBindings.InvokeRequest{
+	resp, err := out.getInstance(ctx).Invoke(ctx, &contribBindings.InvokeRequest{
 		Data:      req.Data,
 		Metadata:  req.Metadata,
 		Operation: contribBindings.OperationKind(req.Operation),
@@ -61,7 +61,7 @@ func (out *outputBinding) Invoke(ctx context.Context, req *proto.InvokeRequest) 
 
 func (out *outputBinding) ListOperations(ctx context.Context, _ *proto.ListOperationsRequest) (*proto.ListOperationsResponse, error) {
 	return &proto.ListOperationsResponse{
-		Operations: internal.Map(out.getOutputBinding(ctx).Operations(), func(op contribBindings.OperationKind) string {
+		Operations: internal.Map(out.getInstance(ctx).Operations(), func(op contribBindings.OperationKind) string {
 			return string(op)
 		}),
 	}, nil
@@ -72,9 +72,9 @@ func (out *outputBinding) Ping(context.Context, *proto.PingRequest) (*proto.Ping
 }
 
 // RegisterOutput the outputbinding implementation for the component gRPC service.
-func RegisterOutput(server *grpc.Server, getOutputBinding func(context.Context) OutputBinding) {
+func RegisterOutput(server *grpc.Server, getInstance func(context.Context) OutputBinding) {
 	outputBinding := &outputBinding{
-		getOutputBinding: getOutputBinding,
+		getInstance: getInstance,
 	}
 	proto.RegisterOutputBindingServer(server, outputBinding)
 }

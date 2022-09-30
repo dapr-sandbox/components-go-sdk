@@ -16,8 +16,8 @@ name: conformance-test
 env:
   # Version of Go
   GOVER: "1.19"
-  # Component socket Path
-  DAPR_COMPONENT_SOCKET_PATH: /tmp/socket.sock
+  # Dapr Socket folder
+  DAPR_COMPONENT_SOCKET_FOLDER: /tmp/dapr-components-sockets
 
 on:
   workflow_dispatch:
@@ -37,6 +37,7 @@ jobs:
           - component: bindings.kafka
             type: bindings
             cmd: go run examples/bindings.kafka/main.go &
+            socket: kafka-pluggable
             operations: |
               - create
               - operations
@@ -49,9 +50,11 @@ jobs:
               initialOffset: oldest
           - component: pubsub.memory
             type: pubsub
+            socket: memory-pluggable
             cmd: go run examples/pubsub.memory/main.go &
           - component: pubsub.redis
             type: pubsub
+            socket: redis-pluggable
             cmd: go run examples/pubsub.redis/main.go &
             test_config: |
               checkInOrderProcessing: false
@@ -64,6 +67,7 @@ jobs:
               concurrency: 1
           - component: pubsub.kafka
             type: pubsub
+            socket: kafka-pluggable
             cmd: go run examples/pubsub.kafka/main.go &
             metadata: |
               brokers: localhost:9092
@@ -72,6 +76,7 @@ jobs:
               initialOffset: oldest
           - component: state.redis
             type: state
+            socket: redis-pluggable
             cmd: go run examples/state.redis/main.go &
             metadata: |
               redisHost: localhost:6379
@@ -114,7 +119,7 @@ jobs:
       - name: Wait for socket
         shell: bash
         run: |
-          until [ -S ${{ env.DAPR_COMPONENT_SOCKET_PATH }} ]
+          until [ -S ${{ env.DAPR_COMPONENT_SOCKET_FOLDER }}/${{ matrix.socket }}.sock ]
           do
               sleep 5
               echo ">>> waiting for socket creation... sleeping"
@@ -123,7 +128,7 @@ jobs:
       - name: Conformance Tests
         uses: mcandeia/action-dapr-conformance-tests@v1
         with:
-          socket: ${{ env.DAPR_COMPONENT_SOCKET_PATH }}
+          socket: ${{ env.DAPR_COMPONENT_SOCKET_FOLDER }}/${{ matrix.socket }}.sock
           type: ${{ matrix.type }}
           metadata: ${{ matrix.metadata }}
           operations: ${{ matrix.operations }}

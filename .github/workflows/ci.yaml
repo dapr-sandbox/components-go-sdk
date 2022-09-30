@@ -17,7 +17,7 @@ env:
   # Version of Go
   GOVER: "1.19"
   # Dapr Socket folder
-  DAPR_COMPONENT_SOCKET_FOLDER: /tmp/dapr-components-sockets
+  DAPR_COMPONENT_SOCKET_FOLDER: /tmp
 
 on:
   workflow_dispatch:

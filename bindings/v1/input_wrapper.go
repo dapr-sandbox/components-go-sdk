@@ -59,7 +59,8 @@ func (in *inputBinding) Ping(context.Context, *proto.PingRequest) (*proto.PingRe
 
 // RegisterInput the inputbinding implementation for the component gRPC service.
 func RegisterInput(server *grpc.Server, getInputBinding func(context.Context) InputBinding) {
-	inputBinding := &inputBinding{}
-	inputBinding.getInputBinding = getInputBinding
+	inputBinding := &inputBinding{
+		getInputBinding: getInputBinding,
+	}
 	proto.RegisterInputBindingServer(server, inputBinding)
 }

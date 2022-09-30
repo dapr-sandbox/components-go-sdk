@@ -101,7 +101,7 @@ func Run() error {
 	done := make(chan struct{})
 	abort := makeAbortChan(done)
 
-	for component, opts := range factories {
+	for component := range factories {
 		socket := filepath.Join(socketFolder, component+".sock")
 		go func(opts *componentsOpts) {
 			err := runComponent(socket, opts, abort)
@@ -109,7 +109,7 @@ func Run() error {
 				svcLogger.Errorf("aborting due to an error %v", err)
 				done <- struct{}{}
 			}
-		}(opts)
+		}(factories[component])
 	}
 
 	select {

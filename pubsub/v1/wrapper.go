@@ -28,8 +28,6 @@ import (
 
 var pubsubLogger = logger.NewLogger("pubsub-component")
 
-var defaultPubSub = &pubsub{}
-
 var (
 	ErrTopicNotSpecified = status.Errorf(codes.InvalidArgument, "topic should be fulfilled in the very first message")
 )
@@ -106,6 +104,8 @@ func (s *pubsub) Ping(context.Context, *proto.PingRequest) (*proto.PingResponse,
 
 // Register the pubsub implementation for the component gRPC service.
 func Register(server *grpc.Server, psFactory func(context.Context) PubSub) {
-	defaultPubSub.getPubSub = psFactory
-	proto.RegisterPubSubServer(server, defaultPubSub)
+	pubsub := &pubsub{
+		getPubSub: psFactory,
+	}
+	proto.RegisterPubSubServer(server, pubsub)
 }

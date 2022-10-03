@@ -96,6 +96,15 @@ func (c *componentsOpts) apply(s *grpc.Server) error {
 	return nil
 }
 
+// merge overrides previous values from componentOpts with the given one
+func (c *componentsOpts) merge(other *componentsOpts) *componentsOpts {
+	if other == nil {
+		return c
+	}
+	c.useGrpcServer = append(c.useGrpcServer, other.useGrpcServer...)
+	return c
+}
+
 // Register a component with the given name.
 func Register(name string, opts ...option) {
 	cmpFactories := &componentsOpts{}
@@ -104,5 +113,5 @@ func Register(name string, opts ...option) {
 		opt(cmpFactories)
 	}
 
-	factories[name] = cmpFactories
+	factories[name] = cmpFactories.merge(factories[name])
 }

@@ -19,6 +19,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"sync"
 	"syscall"
 
 	"google.golang.org/grpc"
@@ -60,7 +61,7 @@ func makeAbortChan(done chan struct{}) chan struct{} {
 	return abortChan
 }
 
-func runComponent(socket string, opts *componentsOpts, abortChan chan struct{}) error {
+func runComponent(socket string, opts *componentsOpts, abortChan chan struct{}, onFinish *sync.WaitGroup) error {
 	// remove socket if it is already created.
 	if err := os.Remove(socket); err != nil && !os.IsNotExist(err) {
 		return err
@@ -81,6 +82,7 @@ func runComponent(socket string, opts *componentsOpts, abortChan chan struct{}) 
 		return err
 	}
 	go func() {
+		defer onFinish.Done()
 		<-abortChan
 		lis.Close()
 	}()
@@ -98,13 +100,15 @@ func Run() error {
 	if len(factories) == 0 {
 		return ErrNoComponentsRegistered
 	}
-	done := make(chan struct{})
+	done := make(chan struct{}, len(factories))
 	abort := makeAbortChan(done)
+	var cleanupGroup sync.WaitGroup
 
 	for component := range factories {
 		socket := filepath.Join(socketFolder, component+".sock")
+		cleanupGroup.Add(1)
 		go func(opts *componentsOpts) {
-			err := runComponent(socket, opts, abort)
+			err := runComponent(socket, opts, abort, &cleanupGroup)
 			if err != nil {
 				svcLogger.Errorf("aborting due to an error %v", err)
 				done <- struct{}{}
@@ -114,8 +118,10 @@ func Run() error {
 
 	select {
 	case <-done:
+		cleanupGroup.Wait()
 		return nil
 	case <-abort:
+		cleanupGroup.Wait()
 		return nil
 	}
 }

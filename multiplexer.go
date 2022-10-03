@@ -36,7 +36,6 @@ func mux[TComponent any](new func() TComponent) func(context.Context) TComponent
 				instanceID = instanceIDs[0]
 			}
 		}
-		svcLogger.Infof("received request for instance: %s\n", instanceID)
 		instance, ok := instances.Load(instanceID)
 		if !ok {
 			firstLoad.Lock()

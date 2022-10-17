@@ -1,4 +1,4 @@
-//go:build unix
+//go:build linux || unix
 
 /*
 Copyright 2022 The Dapr Authors

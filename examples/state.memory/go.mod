@@ -4,12 +4,12 @@ go 1.19
 
 require (
 	github.com/dapr-sandbox/components-go-sdk v0.0.0-00010101000000-000000000000
-	github.com/dapr/components-contrib v1.9.0-rc.1
-	github.com/dapr/kit v0.0.2
+	github.com/dapr/components-contrib v1.9.0-rc.5
+	github.com/dapr/kit v0.0.3-0.20220930182601-272e358ba6a7
 )
 
 require (
-	github.com/dapr/dapr v1.9.0-rc.1 // indirect
+	github.com/dapr/dapr v1.9.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect

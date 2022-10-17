@@ -16,9 +16,9 @@ require (
 )
 
 require (
-	github.com/dapr/components-contrib v1.9.0-rc.1
-	github.com/dapr/dapr v1.9.0-rc.1
-	github.com/dapr/kit v0.0.2
+	github.com/dapr/components-contrib v1.9.0-rc.5
+	github.com/dapr/dapr v1.9.0
+	github.com/dapr/kit v0.0.3-0.20220930182601-272e358ba6a7
 	github.com/google/uuid v1.3.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.8.0

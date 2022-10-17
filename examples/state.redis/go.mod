@@ -6,14 +6,14 @@ replace github.com/dapr-sandbox/components-go-sdk => ../../.
 
 require (
 	github.com/dapr-sandbox/components-go-sdk v0.0.0-00010101000000-000000000000
-	github.com/dapr/components-contrib v1.9.0-rc.1
-	github.com/dapr/kit v0.0.2
+	github.com/dapr/components-contrib v1.9.0-rc.5
+	github.com/dapr/kit v0.0.3-0.20220930182601-272e358ba6a7
 )
 
 require (
 	github.com/agrea/ptr v0.0.0-20180711073057-77a518d99b7b // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
-	github.com/dapr/dapr v1.9.0-rc.1 // indirect
+	github.com/dapr/dapr v1.9.0 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/go-redis/redis/v8 v8.11.5 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect

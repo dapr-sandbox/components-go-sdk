@@ -3,7 +3,7 @@
 ## Build
 FROM golang:1.19-buster AS build
 
-ARG COMPONENT=memory
+ARG COMPONENT=state.memory
 
 WORKDIR /sdk
 
@@ -15,6 +15,7 @@ COPY bindings bindings
 COPY pubsub pubsub
 COPY go.mod ./
 COPY go.sum ./
+RUN go mod download
 
 WORKDIR /app
 

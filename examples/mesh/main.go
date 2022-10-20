@@ -15,16 +15,33 @@ package main
 
 import (
 	dapr "github.com/dapr-sandbox/components-go-sdk"
+	"github.com/dapr-sandbox/components-go-sdk/bindings/v1"
+	"github.com/dapr-sandbox/components-go-sdk/pubsub/v1"
 	"github.com/dapr-sandbox/components-go-sdk/state/v1"
+	redisBinding "github.com/dapr/components-contrib/bindings/redis"
+	"github.com/dapr/components-contrib/pubsub/kafka"
+	redisPs "github.com/dapr/components-contrib/pubsub/redis"
 	redis "github.com/dapr/components-contrib/state/redis"
+
 	"github.com/dapr/kit/logger"
 )
 
-var log = logger.NewLogger("redis-pluggable")
+var log = logger.NewLogger("redis-kafka-pluggable")
 
 func main() {
-	dapr.Register("redis-pluggable", dapr.WithStateStore(func() state.Store {
-		return redis.NewRedisStateStore(log)
+	dapr.Register("redis-pluggable",
+		dapr.WithStateStore(func() state.Store {
+			return redis.NewRedisStateStore(log)
+		}),
+		dapr.WithPubSub(func() pubsub.PubSub {
+			return redisPs.NewRedisStreams(log)
+		}),
+		dapr.WithOutputBinding(func() bindings.OutputBinding {
+			return redisBinding.NewRedis(log)
+		}),
+	)
+	dapr.Register("kafka-pluggable", dapr.WithPubSub(func() pubsub.PubSub {
+		return kafka.NewKafka(log)
 	}))
 	dapr.MustRun()
 }

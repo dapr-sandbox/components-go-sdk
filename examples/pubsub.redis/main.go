@@ -14,40 +14,18 @@ limitations under the License.
 package main
 
 import (
-	"context"
-
 	dapr "github.com/dapr-sandbox/components-go-sdk"
-	"github.com/dapr/components-contrib/pubsub"
+	ps "github.com/dapr-sandbox/components-go-sdk/pubsub/v1"
+
 	"github.com/dapr/components-contrib/pubsub/redis"
 	"github.com/dapr/kit/logger"
 )
 
-type redisPb struct {
-	pubsub.PubSub
-}
-
-const topicPrefix = "pluggable-"
-
-func (r *redisPb) Subscribe(ctx context.Context, req pubsub.SubscribeRequest, handler pubsub.Handler) error {
-	return r.PubSub.Subscribe(ctx, pubsub.SubscribeRequest{
-		Topic:    topicPrefix + req.Topic,
-		Metadata: req.Metadata,
-	}, handler)
-}
-
-func (r *redisPb) Publish(req *pubsub.PublishRequest) error {
-	return r.PubSub.Publish(&pubsub.PublishRequest{
-		Data:        req.Data,
-		PubsubName:  req.PubsubName,
-		Topic:       topicPrefix + req.Topic,
-		Metadata:    req.Metadata,
-		ContentType: req.ContentType,
-	})
-}
-
 var log = logger.NewLogger("redis-pubsub-pluggable")
 
 func main() {
-	redisStreams := redis.NewRedisStreams(log)
-	dapr.MustRun(dapr.UsePubSub(&redisPb{redisStreams}))
+	dapr.Register("redis-pluggable", dapr.WithPubSub(func() ps.PubSub {
+		return redis.NewRedisStreams(log)
+	}))
+	dapr.MustRun()
 }

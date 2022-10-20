@@ -1,6 +1,65 @@
-# Dapr components go SDK POC
+# Dapr pluggable components Go SDK
 
-This repository is a POC of a SDK for [Dapr gRPC Components (a.k.a pluggable components)](https://github.com/dapr/dapr/issues/4925)
+[Pluggable components](https://docs.dapr.io/concepts/components-concept/#built-in-and-pluggable-components) are Dapr components that resides outside Dapr binary and are dynamically registered in runtime.
+
+The SDK provides a better interface to create pluggable components without worrying about underlying communication protocols and connection resiliency.
+
+## Building blocks Interfaces
+
+All building blocks interfaces for this sdk follows the same interfaces provided by [built-in](https://github.com/dapr/components-contrib) components.
+
+See concrete examples of:
+
+- [State Store](https://github.com/dapr/components-contrib/tree/master/state)
+- [Bindings](https://github.com/dapr/components-contrib/tree/master/bindings)
+- [Pub/Sub](https://github.com/dapr/components-contrib/tree/master/pubsub)
+
+## Implementing your State Store
+
+Implement the [State Store](https://github.com/dapr/components-contrib/blob/master/bindings/store.go#L23) interface.
+
+## Implementing your Input/Output Binding
+
+Implement the [Input](https://github.com/dapr/components-contrib/blob/master/bindings/input_binding.go#L24) or/and [Output](https://github.com/dapr/components-contrib/blob/master/bindings/output_binding.go#L24) interface.
+
+## Implementing your Pub/Sub
+
+Implement the [Pub/Sub](https://github.com/dapr/components-contrib/blob/master/pubsub/pubsub.go#L24) interface.
+
+## Registering a pluggable component
+
+Once you have your component implemented, now in order to get your component discovered and [registered](https://docs.dapr.io/operations/components/pluggable-components/pluggable-components-registration/) by Dapr runtime you must register it using the sdk.
+
+Let's say you want to name your state store component as `my-component`, so you have to do the following:
+
+```golang
+
+package main
+
+import (
+	dapr "github.com/dapr-sandbox/components-go-sdk"
+	"github.com/dapr-sandbox/components-go-sdk/state/v1"
+)
+
+
+func main() {
+	dapr.Register("my-component", dapr.WithStateStore(func() state.Store {
+		return &MyStateStoreComponent{}
+	}))
+	dapr.MustRun()
+}
+
+```
+
+That's all!
+
+## Starting the component daemon
+
+Component daemon (or server) is a term used for pluggable components processes that runs alongside the Dapr runtime.
+
+You can start your component daemon without any Dapr runtime connecting to it for testing purposes. When running in this mode, you have to make gRPC calls to see your component working.
+
+Run your component using `go run` as you do normally.
 
 ## Running examples
 
@@ -29,7 +88,7 @@ To create your own implementation:
 
 Optionally you can also add a `docker-compose.dependencies.yml` file and specify container dependencies that will be used when starting your app.
 
-## Getting started
+## Get started
 
 Creating a new component is nothing more than implement a [StateStore](https://github.com/dapr/components-contrib/blob/master/state/store.go#L23) interface and Run the dapr component server.
 

@@ -27,15 +27,13 @@ import (
 
 var outputLogger = logger.NewLogger("outputbinding-component")
 
-var defaultOutputBinding = &outputBinding{}
-
 type outputBinding struct {
 	proto.UnimplementedOutputBindingServer
-	impl OutputBinding
+	getInstance func(context.Context) OutputBinding
 }
 
-func (out *outputBinding) Init(_ context.Context, req *proto.OutputBindingInitRequest) (*proto.OutputBindingInitResponse, error) {
-	return &proto.OutputBindingInitResponse{}, out.impl.Init(contribBindings.Metadata{
+func (out *outputBinding) Init(ctx context.Context, req *proto.OutputBindingInitRequest) (*proto.OutputBindingInitResponse, error) {
+	return &proto.OutputBindingInitResponse{}, out.getInstance(ctx).Init(contribBindings.Metadata{
 		Base: metadata.Base{
 			Properties: req.Metadata.Properties,
 		},
@@ -43,7 +41,7 @@ func (out *outputBinding) Init(_ context.Context, req *proto.OutputBindingInitRe
 }
 
 func (out *outputBinding) Invoke(ctx context.Context, req *proto.InvokeRequest) (*proto.InvokeResponse, error) {
-	resp, err := out.impl.Invoke(ctx, &contribBindings.InvokeRequest{
+	resp, err := out.getInstance(ctx).Invoke(ctx, &contribBindings.InvokeRequest{
 		Data:      req.Data,
 		Metadata:  req.Metadata,
 		Operation: contribBindings.OperationKind(req.Operation),
@@ -61,9 +59,9 @@ func (out *outputBinding) Invoke(ctx context.Context, req *proto.InvokeRequest) 
 	}, nil
 }
 
-func (out *outputBinding) ListOperations(context.Context, *proto.ListOperationsRequest) (*proto.ListOperationsResponse, error) {
+func (out *outputBinding) ListOperations(ctx context.Context, _ *proto.ListOperationsRequest) (*proto.ListOperationsResponse, error) {
 	return &proto.ListOperationsResponse{
-		Operations: internal.Map(out.impl.Operations(), func(op contribBindings.OperationKind) string {
+		Operations: internal.Map(out.getInstance(ctx).Operations(), func(op contribBindings.OperationKind) string {
 			return string(op)
 		}),
 	}, nil
@@ -74,7 +72,9 @@ func (out *outputBinding) Ping(context.Context, *proto.PingRequest) (*proto.Ping
 }
 
 // RegisterOutput the outputbinding implementation for the component gRPC service.
-func RegisterOutput(server *grpc.Server, ps OutputBinding) {
-	defaultOutputBinding.impl = ps
-	proto.RegisterOutputBindingServer(server, defaultOutputBinding)
+func RegisterOutput(server *grpc.Server, getInstance func(context.Context) OutputBinding) {
+	outputBinding := &outputBinding{
+		getInstance: getInstance,
+	}
+	proto.RegisterOutputBindingServer(server, outputBinding)
 }

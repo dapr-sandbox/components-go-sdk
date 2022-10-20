@@ -84,7 +84,7 @@ get-all: $(GET_MODFILES)
 define latest-target
 .PHONY: latest-$(1)
 latest-$(1):
-	cd $(shell dirname $(1));go mod edit -dropreplace github.com/dapr/dapr;go get github.com/dapr/dapr@master; cd -
+	cd $(shell dirname $(1));go mod edit -dropreplace github.com/dapr/dapr;go get github.com/dapr/dapr@master; go mod tidy; cd -
 endef
 
 # Generate latest target action for each go.mod file

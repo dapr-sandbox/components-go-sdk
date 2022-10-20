@@ -16,7 +16,7 @@ kind: Component
 metadata:
   name: test-topic
 spec:
-  type: bindings.pluggable
+  type: bindings.kafka-pluggable
   initTimeout: 1m
   version: v1
   metadata:

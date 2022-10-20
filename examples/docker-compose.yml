@@ -21,16 +21,16 @@ services:
       args:
         COMPONENT: ${COMPONENT:-state.memory}
     environment:
-      - DAPR_COMPONENT_SOCKET_PATH=/var/run/${COMPONENT_NAME:-pluggable}.sock
+      - DAPR_COMPONENT_SOCKET_FOLDER=/var/run
     volumes:
       - socket:/var/run
   daprd:
     container_name: daprd-pluggable-component
     restart: on-failure
-    image: "ghcr.io/mcandeia/daprd:1.9.0-autoregistration-linux-amd64"
+    image: "ghcr.io/dapr/daprd:1.9.0-linux-amd64"
     command: "./daprd --log-level=debug --app-id pluggable-test --components-path=/components"
     environment:
-      - DAPR_PLUGGABLE_COMPONENTS_SOCKETS_FOLDER=/var/run
+      - DAPR_COMPONENTS_SOCKETS_FOLDER=/var/run
     depends_on:
       - component
     ports:

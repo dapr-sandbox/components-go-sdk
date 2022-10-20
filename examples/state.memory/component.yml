@@ -16,6 +16,6 @@ kind: Component
 metadata:
   name: default
 spec:
-  type: state.pluggable
+  type: state.memory-pluggable
   version: v1
   initTimeout: 10s

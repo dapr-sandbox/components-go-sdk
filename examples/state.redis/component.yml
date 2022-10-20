@@ -16,7 +16,7 @@ kind: Component
 metadata:
   name: default
 spec:
-  type: state.pluggable
+  type: state.redis-pluggable
   version: v1
   metadata:
     - name: redisHost

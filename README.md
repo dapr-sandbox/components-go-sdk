@@ -87,19 +87,3 @@ To create your own implementation:
 4. Run `./run.sh your_folder_goes_here`
 
 Optionally you can also add a `docker-compose.dependencies.yml` file and specify container dependencies that will be used when starting your app.
-
-## Get started
-
-Creating a new component is nothing more than implement a [StateStore](https://github.com/dapr/components-contrib/blob/master/state/store.go#L23) interface and Run the dapr component server.
-
-```golang
-package main
-
-import (
-	dapr "github.com/dapr-sandbox/components-go-sdk"
-)
-
-func main() {
-	dapr.MustRun(dapr.UseStateStore(MyComponentGoesHere{}))
-}
-```

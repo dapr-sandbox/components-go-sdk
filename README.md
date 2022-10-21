@@ -6,9 +6,9 @@ The SDK provides a better interface to create pluggable components without worry
 
 ## Building blocks Interfaces
 
-All building blocks interfaces for this sdk follows the same interfaces provided by [built-in](https://github.com/dapr/components-contrib) components.
+All building blocks interfaces for this sdk follows the same interfaces provided by the [built-in](https://github.com/dapr/components-contrib) components.
 
-See concrete examples of:
+See concrete examples of them:
 
 - [State Store](https://github.com/dapr/components-contrib/tree/master/state)
 - [Bindings](https://github.com/dapr/components-contrib/tree/master/bindings)

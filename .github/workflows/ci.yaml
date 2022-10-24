@@ -17,7 +17,7 @@ env:
   # Version of Go
   GOVER: "1.19"
   # Dapr Socket folder
-  DAPR_COMPONENT_SOCKET_FOLDER: /tmp
+  DAPR_COMPONENT_SOCKETS_FOLDER: /tmp
 
 on:
   workflow_dispatch:
@@ -119,7 +119,7 @@ jobs:
       - name: Wait for socket
         shell: bash
         run: |
-          until [ -S ${{ env.DAPR_COMPONENT_SOCKET_FOLDER }}/${{ matrix.socket }}.sock ]
+          until [ -S ${{ env.DAPR_COMPONENT_SOCKETS_FOLDER }}/${{ matrix.socket }}.sock ]
           do
               sleep 5
               echo ">>> waiting for socket creation... sleeping"
@@ -128,7 +128,7 @@ jobs:
       - name: Conformance Tests
         uses: mcandeia/action-dapr-conformance-tests@v1
         with:
-          socket: ${{ env.DAPR_COMPONENT_SOCKET_FOLDER }}/${{ matrix.socket }}.sock
+          socket: ${{ env.DAPR_COMPONENT_SOCKETS_FOLDER }}/${{ matrix.socket }}.sock
           type: ${{ matrix.type }}
           metadata: ${{ matrix.metadata }}
           operations: ${{ matrix.operations }}

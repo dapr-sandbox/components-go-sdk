@@ -32,8 +32,9 @@ var (
 )
 
 const (
-	unixSocketFolderPathEnvVar = "DAPR_COMPONENT_SOCKET_FOLDER"
-	defaultSocketFolder        = "/tmp/dapr-components-sockets"
+	fallbackUnixSocketFolderPathEnvVar = "DAPR_COMPONENT_SOCKET_FOLDER"  // keep backwards compatible
+	unixSocketFolderPathEnvVar         = "DAPR_COMPONENT_SOCKETS_FOLDER" // plural version should be used.
+	defaultSocketFolder                = "/tmp/dapr-components-sockets"
 )
 
 // makeAbortChan Generates a chan bool that automatically gets closed when the process
@@ -95,7 +96,10 @@ func runComponent(socket string, opts *componentsOpts, abortChan chan struct{}, 
 func Run() error {
 	socketFolder, ok := os.LookupEnv(unixSocketFolderPathEnvVar)
 	if !ok {
-		socketFolder = defaultSocketFolder
+		socketFolder, ok = os.LookupEnv(fallbackUnixSocketFolderPathEnvVar)
+		if !ok {
+			socketFolder = defaultSocketFolder
+		}
 	}
 	if len(factories) == 0 {
 		return ErrNoComponentsRegistered

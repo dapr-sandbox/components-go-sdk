@@ -21,7 +21,7 @@ services:
       args:
         COMPONENT: ${COMPONENT:-state.memory}
     environment:
-      - DAPR_COMPONENT_SOCKET_FOLDER=/var/run
+      - DAPR_COMPONENT_SOCKETS_FOLDER=/var/run
     volumes:
       - socket:/var/run
   daprd:

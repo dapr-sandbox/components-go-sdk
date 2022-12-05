@@ -16,7 +16,7 @@ See concrete examples of them:
 
 ## Implementing your State Store
 
-Implement the [State Store](https://github.com/dapr/components-contrib/blob/master/bindings/store.go#L23) interface.
+Implement the [State Store interface](https://github.com/dapr/components-contrib/blob/master/state/store.go#L23).
 
 ## Implementing your Input/Output Binding
 

@@ -125,8 +125,9 @@ jobs:
               echo ">>> waiting for socket creation... sleeping"
           done
 
+
       - name: Conformance Tests
-        uses: dapr-sandbox/action-components-conformance-test@v0.1.0-beta.1
+        uses: dapr-sandbox/action-components-conformance-test@d2fecd2df17678d33a1198faae2413c2e0e98e5a
         with:
           socket: ${{ env.DAPR_COMPONENT_SOCKETS_FOLDER }}/${{ matrix.socket }}.sock
           type: ${{ matrix.type }}

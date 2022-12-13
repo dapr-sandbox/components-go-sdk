@@ -80,7 +80,7 @@ func TestAckManager(t *testing.T) {
 		}
 
 		assert.Len(t, c, 1)
-		manager.Ack(fakeMessageID, nil)
+		_ = manager.Ack(fakeMessageID, nil)
 		assert.Len(t, c, 0)
 	})
 }

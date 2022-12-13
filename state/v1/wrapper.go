@@ -108,7 +108,7 @@ func toDeleteRequest(req *proto.DeleteRequest) *contribState.DeleteRequest {
 }
 
 func (s *store) Delete(ctx context.Context, req *proto.DeleteRequest) (*proto.DeleteResponse, error) {
-	return &proto.DeleteResponse{}, s.getInstance(ctx).Delete(toDeleteRequest(req))
+	return &proto.DeleteResponse{}, s.getInstance(ctx).Delete(ctx, toDeleteRequest(req))
 }
 
 func toGetRequest(req *proto.GetRequest) *contribState.GetRequest {
@@ -137,7 +137,7 @@ func fromGetResponse(res *contribState.GetResponse) *proto.GetResponse {
 }
 
 func (s *store) Get(ctx context.Context, req *proto.GetRequest) (*proto.GetResponse, error) {
-	resp, err := s.getInstance(ctx).Get(toGetRequest(req))
+	resp, err := s.getInstance(ctx).Get(ctx, toGetRequest(req))
 	return internal.IfNotNil(resp, fromGetResponse), err
 }
 
@@ -184,7 +184,7 @@ func toSetRequest(req *proto.SetRequest) *contribState.SetRequest {
 }
 
 func (s *store) Set(ctx context.Context, req *proto.SetRequest) (*proto.SetResponse, error) {
-	return &proto.SetResponse{}, s.getInstance(ctx).Set(toSetRequest(req))
+	return &proto.SetResponse{}, s.getInstance(ctx).Set(ctx, toSetRequest(req))
 }
 
 func (s *store) Ping(context.Context, *proto.PingRequest) (*proto.PingResponse, error) {
@@ -192,7 +192,7 @@ func (s *store) Ping(context.Context, *proto.PingRequest) (*proto.PingResponse, 
 }
 
 func (s *store) BulkDelete(ctx context.Context, req *proto.BulkDeleteRequest) (*proto.BulkDeleteResponse, error) {
-	return &proto.BulkDeleteResponse{}, s.getInstance(ctx).BulkDelete(internal.Map(req.Items, func(delReq *proto.DeleteRequest) contribState.DeleteRequest {
+	return &proto.BulkDeleteResponse{}, s.getInstance(ctx).BulkDelete(ctx, internal.Map(req.Items, func(delReq *proto.DeleteRequest) contribState.DeleteRequest {
 		return *toDeleteRequest(delReq)
 	}))
 }
@@ -215,7 +215,7 @@ func fromBulkGetResponse(item contribState.BulkGetResponse) *proto.BulkStateItem
 }
 
 func (s *store) BulkGet(ctx context.Context, req *proto.BulkGetRequest) (*proto.BulkGetResponse, error) {
-	got, items, err := s.getInstance(ctx).BulkGet(internal.Map(req.Items, func(getReq *proto.GetRequest) contribState.GetRequest {
+	got, items, err := s.getInstance(ctx).BulkGet(ctx, internal.Map(req.Items, func(getReq *proto.GetRequest) contribState.GetRequest {
 		return *toGetRequest(getReq)
 	}))
 	return &proto.BulkGetResponse{
@@ -225,7 +225,7 @@ func (s *store) BulkGet(ctx context.Context, req *proto.BulkGetRequest) (*proto.
 }
 
 func (s *store) BulkSet(ctx context.Context, req *proto.BulkSetRequest) (*proto.BulkSetResponse, error) {
-	return &proto.BulkSetResponse{}, s.getInstance(ctx).BulkSet(internal.Map(req.Items, func(setReq *proto.SetRequest) contribState.SetRequest {
+	return &proto.BulkSetResponse{}, s.getInstance(ctx).BulkSet(ctx, internal.Map(req.Items, func(setReq *proto.SetRequest) contribState.SetRequest {
 		return *toSetRequest(setReq)
 	}))
 }
@@ -256,7 +256,7 @@ func (s *store) Transact(ctx context.Context, req *proto.TransactionalStateReque
 		return nil, status.Errorf(codes.Unimplemented, "method Transact not implemented")
 	}
 
-	return &proto.TransactionalStateResponse{}, transactional.Multi(&contribState.TransactionalStateRequest{
+	return &proto.TransactionalStateResponse{}, transactional.Multi(ctx, &contribState.TransactionalStateRequest{
 		Operations: internal.Map(req.Operations, toTransactionalStateOperation),
 		Metadata:   req.Metadata,
 	})
@@ -316,7 +316,7 @@ func (s *store) Query(ctx context.Context, req *proto.QueryRequest) (*proto.Quer
 		return nil, err
 	}
 
-	resp, err := querier.Query(&contribState.QueryRequest{
+	resp, err := querier.Query(ctx, &contribState.QueryRequest{
 		Query:    nq,
 		Metadata: req.Metadata,
 	})

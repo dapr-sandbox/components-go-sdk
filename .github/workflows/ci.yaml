@@ -55,6 +55,7 @@ jobs:
             operations: |
               - publish
               - subscribe
+              - multiplehandlers
           - component: pubsub.redis
             type: pubsub
             socket: redis-pluggable
@@ -64,6 +65,7 @@ jobs:
             operations: |
               - publish
               - subscribe
+              - multiplehandlers
             metadata: |
               redisHost: localhost:6379
               redisPassword: ""
@@ -78,6 +80,7 @@ jobs:
             operations: |
               - publish
               - subscribe
+              - multiplehandlers
             metadata: |
               brokers: localhost:9092
               consumerGroup: pubsubgroup1

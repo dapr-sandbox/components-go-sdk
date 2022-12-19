@@ -52,12 +52,18 @@ jobs:
             type: pubsub
             socket: memory-pluggable
             cmd: go run examples/pubsub.memory/main.go &
+            operations: |
+              - publish
+              - subscribe
           - component: pubsub.redis
             type: pubsub
             socket: redis-pluggable
             cmd: go run examples/pubsub.redis/main.go &
             test_config: |
               checkInOrderProcessing: false
+            operations: |
+              - publish
+              - subscribe
             metadata: |
               redisHost: localhost:6379
               redisPassword: ""
@@ -69,6 +75,9 @@ jobs:
             type: pubsub
             socket: kafka-pluggable
             cmd: go run examples/pubsub.kafka/main.go &
+            operations: |
+              - publish
+              - subscribe
             metadata: |
               brokers: localhost:9092
               consumerGroup: pubsubgroup1
@@ -124,7 +133,6 @@ jobs:
               sleep 5
               echo ">>> waiting for socket creation... sleeping"
           done
-
 
       - name: Conformance Tests
         uses: dapr-sandbox/action-components-conformance-test@v0.1.0-beta.3

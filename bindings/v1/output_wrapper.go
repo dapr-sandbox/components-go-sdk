@@ -17,15 +17,12 @@ import (
 	"context"
 
 	"github.com/dapr-sandbox/components-go-sdk/internal"
-	"github.com/dapr/kit/logger"
 	"google.golang.org/grpc"
 
 	contribBindings "github.com/dapr/components-contrib/bindings"
 	"github.com/dapr/components-contrib/metadata"
 	proto "github.com/dapr/dapr/pkg/proto/components/v1"
 )
-
-var outputLogger = logger.NewLogger("outputbinding-component")
 
 type outputBinding struct {
 	proto.UnimplementedOutputBindingServer

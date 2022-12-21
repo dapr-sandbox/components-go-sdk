@@ -19,8 +19,9 @@ import (
 	"github.com/dapr-sandbox/components-go-sdk/bindings/v1"
 	"github.com/dapr-sandbox/components-go-sdk/pubsub/v1"
 	"github.com/dapr-sandbox/components-go-sdk/state/v1"
-	"github.com/dapr/kit/logger"
 	"google.golang.org/grpc"
+
+	"github.com/dapr/kit/logger"
 )
 
 var (
@@ -32,9 +33,7 @@ type componentsOpts struct {
 	useGrpcServer []func(*grpc.Server)
 }
 
-var (
-	factories = make(map[string]*componentsOpts)
-)
+var factories = make(map[string]*componentsOpts)
 
 type option = func(*componentsOpts)
 

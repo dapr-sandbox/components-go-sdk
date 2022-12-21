@@ -80,7 +80,7 @@ func (m *AcknowledgementManager[TAckResult]) Ack(messageID string, result TAckRe
 
 	select {
 	// wait time for outstanding acks
-	// acks should be instantaneous as the channel is bufferized size 1
+	// that should be instantaneous as the channel is bufferized size 1
 	// if this operation takes longer than the waitFunc (defaults to 1s)
 	// it probably means that no consumer is waiting for the message ack
 	// or it could be duplicated ack for the same message.

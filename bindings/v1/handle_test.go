@@ -22,8 +22,10 @@ import (
 	"testing"
 
 	"github.com/dapr-sandbox/components-go-sdk/internal"
+
 	contribBindings "github.com/dapr/components-contrib/bindings"
 	proto "github.com/dapr/dapr/pkg/proto/components/v1"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -31,7 +33,8 @@ type recvFakeResp struct {
 	msg *proto.ReadRequest
 	err error
 }
-type fakeTsStream struct {
+
+type fakeTSStream struct {
 	sendCalled   atomic.Int64
 	onSendCalled func(*proto.ReadResponse)
 	sendErr      error
@@ -39,14 +42,16 @@ type fakeTsStream struct {
 	recvChan     chan *recvFakeResp
 }
 
-func (f *fakeTsStream) Send(msg *proto.ReadResponse) error {
+func (f *fakeTSStream) Send(msg *proto.ReadResponse) error {
 	f.sendCalled.Add(1)
 	if f.onSendCalled != nil {
 		f.onSendCalled(msg)
 	}
+
 	return f.sendErr
 }
-func (f *fakeTsStream) Recv() (*proto.ReadRequest, error) {
+
+func (f *fakeTSStream) Recv() (*proto.ReadRequest, error) {
 	f.recvCalled.Add(1)
 	var (
 		resp *proto.ReadRequest
@@ -67,7 +72,7 @@ func TestAckLoop(t *testing.T) {
 			err: io.EOF,
 		}
 		close(recvChan)
-		stream := &fakeTsStream{recvChan: recvChan}
+		stream := &fakeTSStream{recvChan: recvChan}
 		assert.Nil(t, ackLoop(context.Background(), stream, nil))
 		assert.Equal(t, int64(1), stream.recvCalled.Load())
 	})
@@ -84,7 +89,7 @@ func TestAckLoop(t *testing.T) {
 			err: io.EOF,
 		}
 		close(recvChan)
-		stream := &fakeTsStream{recvChan: recvChan}
+		stream := &fakeTSStream{recvChan: recvChan}
 		assert.NotEmpty(t, ack.Pending())
 		assert.Nil(t, ackLoop(context.Background(), stream, ack))
 		assert.Equal(t, int64(2), stream.recvCalled.Load())
@@ -109,7 +114,7 @@ func TestAckLoop(t *testing.T) {
 			err: io.EOF,
 		}
 		close(recvChan)
-		stream := &fakeTsStream{recvChan: recvChan}
+		stream := &fakeTSStream{recvChan: recvChan}
 		assert.NotEmpty(t, ack.Pending())
 		assert.Nil(t, ackLoop(context.Background(), stream, ack))
 		assert.Equal(t, int64(2), stream.recvCalled.Load())
@@ -122,7 +127,7 @@ func TestAckLoop(t *testing.T) {
 func TestHandler(t *testing.T) {
 	t.Run("when send returns an error so handler should return an error and cleanup pending acks", func(t *testing.T) {
 		sendErr := errors.New("fake-err")
-		stream := &fakeTsStream{sendErr: sendErr}
+		stream := &fakeTSStream{sendErr: sendErr}
 		acks := internal.NewAckManager[*handleResponse]()
 		handlerf := handler(stream, acks)
 
@@ -132,7 +137,7 @@ func TestHandler(t *testing.T) {
 		assert.Equal(t, int64(1), stream.sendCalled.Load())
 	})
 	t.Run("handle should return Acktimeout when context is done", func(t *testing.T) {
-		stream := &fakeTsStream{}
+		stream := &fakeTSStream{}
 		acks := internal.NewAckManager[*handleResponse]()
 		handlerf := handler(stream, acks)
 		ctx, cancel := context.WithCancel(context.Background())
@@ -147,7 +152,7 @@ func TestHandler(t *testing.T) {
 		fakeErr := errors.New("fake-err")
 		var sendCalledWg sync.WaitGroup
 		sendCalledWg.Add(1)
-		stream := &fakeTsStream{
+		stream := &fakeTSStream{
 			onSendCalled: func(*proto.ReadResponse) {
 				sendCalledWg.Done()
 			},

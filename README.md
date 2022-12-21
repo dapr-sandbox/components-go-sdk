@@ -1,3 +1,7 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/dapr-sandbox/components-go-sdk)](https://goreportcard.com/report/github.com/dapr-sandbox/components-go-sdk)
+[![codecov](https://codecov.io/gh/dapr-sandbox/components-go-sdk/branch/main/graph/badge.svg)](https://codecov.io/gh/dapr-sandbox/components-go-sdk)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://github.com/dapr-sandbox/components-go-sdk/blob/main/LICENSE)
+
 # Dapr pluggable components Go SDK
 
 [Pluggable components](https://docs.dapr.io/concepts/components-concept/#built-in-and-pluggable-components) are Dapr components that resides outside Dapr binary and are dynamically registered in runtime.

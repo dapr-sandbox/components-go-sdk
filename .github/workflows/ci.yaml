@@ -138,7 +138,7 @@ jobs:
           done
 
       - name: Conformance Tests
-        uses: dapr-sandbox/action-components-conformance-test@v0.1.0-beta.3
+        uses: dapr-sandbox/action-components-conformance-test@v0.1.0
         with:
           socket: ${{ env.DAPR_COMPONENT_SOCKETS_FOLDER }}/${{ matrix.socket }}.sock
           type: ${{ matrix.type }}

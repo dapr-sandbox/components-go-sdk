@@ -52,12 +52,20 @@ jobs:
             type: pubsub
             socket: memory-pluggable
             cmd: go run examples/pubsub.memory/main.go &
+            operations: |
+              - publish
+              - subscribe
+              - multiplehandlers
           - component: pubsub.redis
             type: pubsub
             socket: redis-pluggable
             cmd: go run examples/pubsub.redis/main.go &
             test_config: |
               checkInOrderProcessing: false
+            operations: |
+              - publish
+              - subscribe
+              - multiplehandlers
             metadata: |
               redisHost: localhost:6379
               redisPassword: ""
@@ -69,6 +77,10 @@ jobs:
             type: pubsub
             socket: kafka-pluggable
             cmd: go run examples/pubsub.kafka/main.go &
+            operations: |
+              - publish
+              - subscribe
+              - multiplehandlers
             metadata: |
               brokers: localhost:9092
               consumerGroup: pubsubgroup1
@@ -126,7 +138,7 @@ jobs:
           done
 
       - name: Conformance Tests
-        uses: mcandeia/action-dapr-conformance-tests@v1
+        uses: dapr-sandbox/action-components-conformance-test@v0.1.0
         with:
           socket: ${{ env.DAPR_COMPONENT_SOCKETS_FOLDER }}/${{ matrix.socket }}.sock
           type: ${{ matrix.type }}

@@ -18,7 +18,6 @@ import (
 	"encoding/json"
 
 	contribMetadata "github.com/dapr/components-contrib/metadata"
-	"github.com/dapr/components-contrib/state"
 	contribState "github.com/dapr/components-contrib/state"
 	contribQuery "github.com/dapr/components-contrib/state/query"
 
@@ -250,7 +249,7 @@ func toTransactionalStateOperation(op *proto.TransactionalStateOperation) contri
 }
 
 func (s *store) Transact(ctx context.Context, req *proto.TransactionalStateRequest) (*proto.TransactionalStateResponse, error) {
-	transactional, ok := s.getInstance(ctx).(state.TransactionalStore)
+	transactional, ok := s.getInstance(ctx).(contribState.TransactionalStore)
 
 	if transactional == nil || !ok {
 		return nil, status.Errorf(codes.Unimplemented, "method Transact not implemented")
@@ -263,7 +262,7 @@ func (s *store) Transact(ctx context.Context, req *proto.TransactionalStateReque
 }
 
 func (s *store) Query(ctx context.Context, req *proto.QueryRequest) (*proto.QueryResponse, error) {
-	querier, ok := s.getInstance(ctx).(state.Querier)
+	querier, ok := s.getInstance(ctx).(contribState.Querier)
 	if querier == nil || !ok {
 		return nil, status.Errorf(codes.Unimplemented, "method Query not implemented")
 	}
@@ -312,7 +311,7 @@ func (s *store) Query(ctx context.Context, req *proto.QueryRequest) (*proto.Quer
 	}
 
 	var nq contribQuery.Query
-	if err := json.Unmarshal(bts, &nq); err != nil {
+	if err = json.Unmarshal(bts, &nq); err != nil {
 		return nil, err
 	}
 

@@ -18,8 +18,10 @@ import (
 	"io"
 
 	"github.com/dapr-sandbox/components-go-sdk/internal"
+
 	contribBindings "github.com/dapr/components-contrib/bindings"
 	proto "github.com/dapr/dapr/pkg/proto/components/v1"
+
 	"github.com/pkg/errors"
 )
 

@@ -26,10 +26,8 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-var (
-	// ErrNoComponentsRegistered is returned when none components was registered.
-	ErrNoComponentsRegistered = errors.New("none components was registered")
-)
+// ErrNoComponentsRegistered is returned when none components was registered.
+var ErrNoComponentsRegistered = errors.New("none components was registered")
 
 const (
 	fallbackUnixSocketFolderPathEnvVar = "DAPR_COMPONENT_SOCKET_FOLDER"  // keep backwards compatible
@@ -49,7 +47,6 @@ func makeAbortChan(done chan struct{}) chan struct{} {
 			close(abortChan)
 		case <-done:
 			close(abortChan)
-
 		}
 	}()
 

@@ -22,6 +22,7 @@ import (
 
 	contribPubSub "github.com/dapr/components-contrib/pubsub"
 	proto "github.com/dapr/dapr/pkg/proto/components/v1"
+
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -48,6 +49,7 @@ func (f *fakeStream) Send(req *proto.PullMessagesResponse) error {
 	}
 	return f.sendErr
 }
+
 func (f *fakeStream) Recv() (*proto.PullMessagesRequest, error) {
 	f.recvCalled.Add(1)
 	resp := <-f.recvChan
@@ -86,10 +88,12 @@ func (f *fakePubSubImpl) Init(metadata contribPubSub.Metadata) error {
 	}
 	return f.initErr
 }
+
 func (f *fakePubSubImpl) Features() []contribPubSub.Feature {
 	f.featuresCalled.Add(1)
 	return f.featuresResp
 }
+
 func (f *fakePubSubImpl) Publish(req *contribPubSub.PublishRequest) error {
 	f.publishCalled.Add(1)
 	if f.onPublishCalled != nil {
@@ -97,6 +101,7 @@ func (f *fakePubSubImpl) Publish(req *contribPubSub.PublishRequest) error {
 	}
 	return f.publishErr
 }
+
 func (f *fakePubSubImpl) Subscribe(ctx context.Context, req contribPubSub.SubscribeRequest, handler contribPubSub.Handler) error {
 	f.subscribeCalled.Add(1)
 	if f.onSubscribeCalled != nil {

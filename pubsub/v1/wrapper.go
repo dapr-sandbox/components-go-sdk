@@ -16,19 +16,20 @@ package pubsub
 import (
 	"context"
 
-	"github.com/dapr-sandbox/components-go-sdk/internal"
 	contribMetadata "github.com/dapr/components-contrib/metadata"
 	contribPubSub "github.com/dapr/components-contrib/pubsub"
 	proto "github.com/dapr/dapr/pkg/proto/components/v1"
 	"github.com/dapr/kit/logger"
+
+	"github.com/dapr-sandbox/components-go-sdk/internal"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-var pubsubLogger = logger.NewLogger("pubsub-component")
-
 var (
+	pubsubLogger         = logger.NewLogger("pubsub-component")
 	ErrTopicNotSpecified = status.Errorf(codes.InvalidArgument, "topic should be fulfilled in the very first message")
 )
 

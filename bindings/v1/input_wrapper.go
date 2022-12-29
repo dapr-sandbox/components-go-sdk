@@ -19,7 +19,9 @@ import (
 	"github.com/dapr/components-contrib/bindings"
 	"github.com/dapr/components-contrib/metadata"
 	proto "github.com/dapr/dapr/pkg/proto/components/v1"
+
 	"github.com/dapr/kit/logger"
+
 	"google.golang.org/grpc"
 )
 
@@ -45,7 +47,6 @@ func (in *inputBinding) Read(stream proto.InputBinding_ReadServer) error {
 	handler, startAckLoop := streamReader(stream)
 
 	err := in.getInstance(ctx).Read(ctx, handler)
-
 	if err != nil {
 		return err
 	}

@@ -29,6 +29,35 @@ on:
       - main
 
 jobs:
+  build:
+    env:
+      GOLANGCILINT_VER: v1.50.1
+      GO_VERSION: 1.19.x
+      GOOS: ${{ matrix.target_os }}
+      GOARCH: ${{ matrix.target_arch }}
+      GOPROXY: https://proxy.golang.org
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3.2.0
+        with:
+          version: ${{ env.GOLANGCILINT_VER }}
+          skip-cache: true
+
+      - name: Test
+        run: go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+
+      - name: Codecov
+        uses: codecov/codecov-action@v1
   test:
     strategy:
       fail-fast: false

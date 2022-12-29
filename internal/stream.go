@@ -45,6 +45,7 @@ func NewGRPCThreadSafeStream[TSend any, TRecv any](stream GRPCServerStream[TSend
 		stream:   stream,
 	}
 }
+
 func (s *GRPCThreadSafeStream[TSend, TRecv, GRPCServerStream]) Send(msg *TSend) error {
 	s.sendLock.Lock()
 	defer s.sendLock.Unlock()

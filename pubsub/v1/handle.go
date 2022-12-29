@@ -17,9 +17,11 @@ import (
 	"context"
 	"io"
 
-	"github.com/dapr-sandbox/components-go-sdk/internal"
 	contribPubSub "github.com/dapr/components-contrib/pubsub"
 	proto "github.com/dapr/dapr/pkg/proto/components/v1"
+
+	"github.com/dapr-sandbox/components-go-sdk/internal"
+
 	"github.com/pkg/errors"
 )
 

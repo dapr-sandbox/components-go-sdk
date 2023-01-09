@@ -18,15 +18,15 @@ See concrete examples of them:
 - [Bindings](https://github.com/dapr/components-contrib/tree/master/bindings)
 - [Pub/Sub](https://github.com/dapr/components-contrib/tree/master/pubsub)
 
-## Implementing your State Store
+## Implementing your own State Store pluggable component
 
 Implement the [State Store interface](https://github.com/dapr/components-contrib/blob/master/state/store.go#L23).
 
-## Implementing your Input/Output Binding
+## Implementing your own Input/Output Binding pluggable component
 
 Implement the [Input](https://github.com/dapr/components-contrib/blob/master/bindings/input_binding.go#L24) or/and [Output](https://github.com/dapr/components-contrib/blob/master/bindings/output_binding.go#L24) interface.
 
-## Implementing your Pub/Sub
+## Implementing your own Pub/Sub pluggable component
 
 Implement the [Pub/Sub](https://github.com/dapr/components-contrib/blob/master/pubsub/pubsub.go#L24) interface.
 

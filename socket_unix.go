@@ -15,7 +15,9 @@ limitations under the License.
 
 package dapr
 
-import "syscall"
+import (
+	"syscall"
+)
 
 func init() {
 	//nolint

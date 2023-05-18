@@ -27,7 +27,7 @@ Creating a pluggable component starts with an empty Go application.
 
 ```bash
 mkdir example
-cd component
+cd example
 go mod init example
 ```
 

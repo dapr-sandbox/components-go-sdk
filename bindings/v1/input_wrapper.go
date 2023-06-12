@@ -33,7 +33,7 @@ type inputBinding struct {
 }
 
 func (in *inputBinding) Init(ctx context.Context, req *proto.InputBindingInitRequest) (*proto.InputBindingInitResponse, error) {
-	return &proto.InputBindingInitResponse{}, in.getInstance(ctx).Init(bindings.Metadata{
+	return &proto.InputBindingInitResponse{}, in.getInstance(ctx).Init(ctx, bindings.Metadata{
 		Base: metadata.Base{
 			Properties: req.Metadata.Properties,
 		},

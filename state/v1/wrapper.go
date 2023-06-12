@@ -75,7 +75,7 @@ func toConcurrency(concurrency proto.StateOptions_StateConcurrency) string {
 }
 
 func (s *store) Init(ctx context.Context, initReq *proto.InitRequest) (*proto.InitResponse, error) {
-	return &proto.InitResponse{}, s.getInstance(ctx).Init(contribState.Metadata{
+	return &proto.InitResponse{}, s.getInstance(ctx).Init(ctx, contribState.Metadata{
 		Base: contribMetadata.Base{Properties: initReq.Metadata.Properties},
 	})
 }
@@ -190,10 +190,11 @@ func (s *store) Ping(context.Context, *proto.PingRequest) (*proto.PingResponse, 
 	return &proto.PingResponse{}, nil
 }
 
+// TODO: The default value was added  contribState.BulkStoreOpts{Parallelism: 1}
 func (s *store) BulkDelete(ctx context.Context, req *proto.BulkDeleteRequest) (*proto.BulkDeleteResponse, error) {
 	return &proto.BulkDeleteResponse{}, s.getInstance(ctx).BulkDelete(ctx, internal.Map(req.Items, func(delReq *proto.DeleteRequest) contribState.DeleteRequest {
 		return *toDeleteRequest(delReq)
-	}))
+	}), contribState.BulkStoreOpts{Parallelism: 1})
 }
 
 func fromBulkGetResponse(item contribState.BulkGetResponse) *proto.BulkStateItem {
@@ -213,12 +214,16 @@ func fromBulkGetResponse(item contribState.BulkGetResponse) *proto.BulkStateItem
 	}
 }
 
+// TODO: Review Implementation
 func (s *store) BulkGet(ctx context.Context, req *proto.BulkGetRequest) (*proto.BulkGetResponse, error) {
-	got, items, err := s.getInstance(ctx).BulkGet(ctx, internal.Map(req.Items, func(getReq *proto.GetRequest) contribState.GetRequest {
+	//got, items, err := s.getInstance(ctx).BulkGet(ctx, internal.Map(req.Items, func(getReq *proto.GetRequest) contribState.GetRequest {
+	//	return *toGetRequest(getReq)
+	//}), contribState.BulkGetOpts{Parallelism: 1})
+	items, err := s.getInstance(ctx).BulkGet(ctx, internal.Map(req.Items, func(getReq *proto.GetRequest) contribState.GetRequest {
 		return *toGetRequest(getReq)
-	}))
+	}), contribState.BulkGetOpts{Parallelism: 1})
 	return &proto.BulkGetResponse{
-		Got:   got,
+		//	Got:   got,
 		Items: internal.Map(items, fromBulkGetResponse),
 	}, err
 }
@@ -226,9 +231,11 @@ func (s *store) BulkGet(ctx context.Context, req *proto.BulkGetRequest) (*proto.
 func (s *store) BulkSet(ctx context.Context, req *proto.BulkSetRequest) (*proto.BulkSetResponse, error) {
 	return &proto.BulkSetResponse{}, s.getInstance(ctx).BulkSet(ctx, internal.Map(req.Items, func(setReq *proto.SetRequest) contribState.SetRequest {
 		return *toSetRequest(setReq)
-	}))
+	}), contribState.BulkStoreOpts{Parallelism: 1})
 }
 
+// TODO: Review Implementation
+/*
 func toTransactionalStateOperation(op *proto.TransactionalStateOperation) contribState.TransactionalStateOperation {
 	var (
 		request   any
@@ -236,18 +243,19 @@ func toTransactionalStateOperation(op *proto.TransactionalStateOperation) contri
 	)
 	if delete := op.GetDelete(); delete != nil {
 		request = *toDeleteRequest(delete)
-		operation = contribState.Delete
+		//operation = contribState.Delete
 	} else {
 		request = *toSetRequest(op.GetSet())
-		operation = contribState.Upsert
+		//operation = contribState.Upsert
 	}
 
 	return contribState.TransactionalStateOperation{
-		Request:   request,
-		Operation: operation,
+		//Request:   request,
+		//Operation: operation,
 	}
-}
+}*/
 
+// TODO: Review Implementation
 func (s *store) Transact(ctx context.Context, req *proto.TransactionalStateRequest) (*proto.TransactionalStateResponse, error) {
 	transactional, ok := s.getInstance(ctx).(contribState.TransactionalStore)
 
@@ -256,8 +264,8 @@ func (s *store) Transact(ctx context.Context, req *proto.TransactionalStateReque
 	}
 
 	return &proto.TransactionalStateResponse{}, transactional.Multi(ctx, &contribState.TransactionalStateRequest{
-		Operations: internal.Map(req.Operations, toTransactionalStateOperation),
-		Metadata:   req.Metadata,
+		//Operations: internal.Map(req.Operations, toTransactionalStateOperation),
+		Metadata: req.Metadata,
 	})
 }
 

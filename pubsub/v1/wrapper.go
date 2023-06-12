@@ -74,7 +74,7 @@ func (s *pubsub) PullMessages(stream proto.PubSub_PullMessagesServer) error {
 }
 
 func (s *pubsub) Init(ctx context.Context, initReq *proto.PubSubInitRequest) (*proto.PubSubInitResponse, error) {
-	return &proto.PubSubInitResponse{}, s.getInstance(ctx).Init(contribPubSub.Metadata{
+	return &proto.PubSubInitResponse{}, s.getInstance(ctx).Init(ctx, contribPubSub.Metadata{
 		Base: contribMetadata.Base{Properties: initReq.Metadata.Properties},
 	})
 }
@@ -90,7 +90,7 @@ func (s *pubsub) Features(ctx context.Context, _ *proto.FeaturesRequest) (*proto
 }
 
 func (s *pubsub) Publish(ctx context.Context, req *proto.PublishRequest) (*proto.PublishResponse, error) {
-	return &proto.PublishResponse{}, s.getInstance(ctx).Publish(&contribPubSub.PublishRequest{
+	return &proto.PublishResponse{}, s.getInstance(ctx).Publish(ctx, &contribPubSub.PublishRequest{
 		Data:        req.Data,
 		PubsubName:  req.PubsubName,
 		Topic:       req.Topic,

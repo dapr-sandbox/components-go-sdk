@@ -2,8 +2,6 @@ github.com/cloudevents/sdk-go/binding/format/protobuf/v2 v2.13.0 h1:iPKdoP+7qq68
 github.com/cloudevents/sdk-go/binding/format/protobuf/v2 v2.13.0/go.mod h1:Wpbh+0sQ/E5AA5EpqLncez2noG65dlyedpp5qfoYyPE=
 github.com/cloudevents/sdk-go/v2 v2.13.0 h1:2zxDS8RyY1/wVPULGGbdgniGXSzLaRJVl136fLXGsYw=
 github.com/cloudevents/sdk-go/v2 v2.13.0/go.mod h1:xDmKfzNjM8gBvjaF8ijFjM1VYOVUEeUfapHMUX1T5To=
-github.com/dapr/components-contrib v1.11.0 h1:yFt0J/6MOVzbTya1ppACpM+9obZgbI2whAazacfG2n4=
-github.com/dapr/components-contrib v1.11.0/go.mod h1:prx2ATX6wFnR6Cp1xXGW3J9s5Gyz9AtOrG0xBf7QnHI=
 github.com/dapr/dapr v1.11.0 h1:sKDHKyehNm7xY2z6oXoUIcj2lXqKnlkAYPkvroldrwU=
 github.com/dapr/dapr v1.11.0/go.mod h1:++3iGjeJcpraxZxdZi1EblplcCXgu/Ycz0Q/u+MYvxw=
 github.com/dapr/kit v0.11.2 h1:4tJre4OWyOfBFDZeDvEIC+7nYgTRgqpCvo4/bfB2sN8=

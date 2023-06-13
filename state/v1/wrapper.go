@@ -214,16 +214,11 @@ func fromBulkGetResponse(item contribState.BulkGetResponse) *proto.BulkStateItem
 	}
 }
 
-// TODO: Review Implementation
 func (s *store) BulkGet(ctx context.Context, req *proto.BulkGetRequest) (*proto.BulkGetResponse, error) {
-	//got, items, err := s.getInstance(ctx).BulkGet(ctx, internal.Map(req.Items, func(getReq *proto.GetRequest) contribState.GetRequest {
-	//	return *toGetRequest(getReq)
-	//}), contribState.BulkGetOpts{Parallelism: 1})
 	items, err := s.getInstance(ctx).BulkGet(ctx, internal.Map(req.Items, func(getReq *proto.GetRequest) contribState.GetRequest {
 		return *toGetRequest(getReq)
 	}), contribState.BulkGetOpts{Parallelism: 1})
 	return &proto.BulkGetResponse{
-		//	Got:   got,
 		Items: internal.Map(items, fromBulkGetResponse),
 	}, err
 }
@@ -234,28 +229,42 @@ func (s *store) BulkSet(ctx context.Context, req *proto.BulkSetRequest) (*proto.
 	}), contribState.BulkStoreOpts{Parallelism: 1})
 }
 
-// TODO: Review Implementation
-/*
+type TransactionalStateOperation struct {
+	Request       contribState.StateRequest
+	OperationType contribState.OperationType
+}
+
+func (m *TransactionalStateOperation) GetKey() string {
+	return m.Request.GetKey()
+}
+
+func (m *TransactionalStateOperation) GetMetadata() map[string]string {
+	return m.Request.GetMetadata()
+}
+
+func (m *TransactionalStateOperation) Operation() contribState.OperationType {
+	return m.OperationType
+}
+
 func toTransactionalStateOperation(op *proto.TransactionalStateOperation) contribState.TransactionalStateOperation {
 	var (
-		request   any
+		request   contribState.StateRequest
 		operation contribState.OperationType
 	)
 	if delete := op.GetDelete(); delete != nil {
 		request = *toDeleteRequest(delete)
-		//operation = contribState.Delete
+		operation = contribState.OperationDelete
 	} else {
 		request = *toSetRequest(op.GetSet())
-		//operation = contribState.Upsert
+		operation = contribState.OperationUpsert
 	}
 
-	return contribState.TransactionalStateOperation{
-		//Request:   request,
-		//Operation: operation,
+	return &TransactionalStateOperation{
+		Request:       request,
+		OperationType: operation,
 	}
-}*/
+}
 
-// TODO: Review Implementation
 func (s *store) Transact(ctx context.Context, req *proto.TransactionalStateRequest) (*proto.TransactionalStateResponse, error) {
 	transactional, ok := s.getInstance(ctx).(contribState.TransactionalStore)
 
@@ -264,8 +273,8 @@ func (s *store) Transact(ctx context.Context, req *proto.TransactionalStateReque
 	}
 
 	return &proto.TransactionalStateResponse{}, transactional.Multi(ctx, &contribState.TransactionalStateRequest{
-		//Operations: internal.Map(req.Operations, toTransactionalStateOperation),
-		Metadata: req.Metadata,
+		Operations: internal.Map(req.Operations, toTransactionalStateOperation),
+		Metadata:   req.Metadata,
 	})
 }
 

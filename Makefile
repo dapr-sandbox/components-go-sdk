@@ -95,3 +95,7 @@ LATEST_MODFILES:=$(foreach ITEM,$(MODFILES),latest-$(ITEM))
 
 .PHONY: update-latest
 update-latest: $(LATEST_MODFILES)
+
+.PHONY: lint
+lint:
+	golangci-lint run ./...

@@ -81,7 +81,7 @@ type fakePubSubImpl struct {
 	onHandlerResp     func(error)
 }
 
-func (f *fakePubSubImpl) Init(metadata contribPubSub.Metadata) error {
+func (f *fakePubSubImpl) Init(_ context.Context, metadata contribPubSub.Metadata) error {
 	f.initCalled.Add(1)
 	if f.onInitCalled != nil {
 		f.onInitCalled(metadata)
@@ -94,7 +94,7 @@ func (f *fakePubSubImpl) Features() []contribPubSub.Feature {
 	return f.featuresResp
 }
 
-func (f *fakePubSubImpl) Publish(req *contribPubSub.PublishRequest) error {
+func (f *fakePubSubImpl) Publish(_ context.Context, req *contribPubSub.PublishRequest) error {
 	f.publishCalled.Add(1)
 	if f.onPublishCalled != nil {
 		f.onPublishCalled(req)
@@ -102,7 +102,7 @@ func (f *fakePubSubImpl) Publish(req *contribPubSub.PublishRequest) error {
 	return f.publishErr
 }
 
-func (f *fakePubSubImpl) Subscribe(ctx context.Context, req contribPubSub.SubscribeRequest, handler contribPubSub.Handler) error {
+func (f *fakePubSubImpl) Subscribe(_ context.Context, req contribPubSub.SubscribeRequest, handler contribPubSub.Handler) error {
 	f.subscribeCalled.Add(1)
 	if f.onSubscribeCalled != nil {
 		f.onSubscribeCalled(req)

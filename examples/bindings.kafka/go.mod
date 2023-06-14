@@ -1,6 +1,6 @@
 module github.com/dapr-sandbox/components-go-sdk/examples/bindings.kafka
 
-go 1.19
+go 1.20
 
 replace github.com/dapr-sandbox/components-go-sdk => ../../.
 

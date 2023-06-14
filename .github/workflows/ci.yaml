@@ -15,7 +15,7 @@ name: conformance-test
 
 env:
   # Version of Go
-  GOVER: "1.19"
+  GOVER: "1.20"
   # Dapr Socket folder
   DAPR_COMPONENT_SOCKETS_FOLDER: /tmp
 
@@ -32,7 +32,7 @@ jobs:
   build:
     env:
       GOLANGCILINT_VER: v1.50.1
-      GO_VERSION: 1.19.x
+      GO_VERSION: 1.20.x
       GOOS: ${{ matrix.target_os }}
       GOARCH: ${{ matrix.target_arch }}
       GOPROXY: https://proxy.golang.org

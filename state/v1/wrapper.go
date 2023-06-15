@@ -16,7 +16,6 @@ package state
 import (
 	"context"
 	"encoding/json"
-
 	contribMetadata "github.com/dapr/components-contrib/metadata"
 	contribState "github.com/dapr/components-contrib/state"
 	contribQuery "github.com/dapr/components-contrib/state/query"
@@ -229,39 +228,11 @@ func (s *store) BulkSet(ctx context.Context, req *proto.BulkSetRequest) (*proto.
 	}), contribState.BulkStoreOpts{Parallelism: 1})
 }
 
-type TransactionalStateOperation struct {
-	Request       contribState.StateRequest
-	OperationType contribState.OperationType
-}
-
-func (m *TransactionalStateOperation) GetKey() string {
-	return m.Request.GetKey()
-}
-
-func (m *TransactionalStateOperation) GetMetadata() map[string]string {
-	return m.Request.GetMetadata()
-}
-
-func (m *TransactionalStateOperation) Operation() contribState.OperationType {
-	return m.OperationType
-}
-
 func toTransactionalStateOperation(op *proto.TransactionalStateOperation) contribState.TransactionalStateOperation {
-	var (
-		request   contribState.StateRequest
-		operation contribState.OperationType
-	)
-	if delete := op.GetDelete(); delete != nil {
-		request = *toDeleteRequest(delete)
-		operation = contribState.OperationDelete
+	if opDelete := op.GetDelete(); opDelete != nil {
+		return *toDeleteRequest(opDelete)
 	} else {
-		request = *toSetRequest(op.GetSet())
-		operation = contribState.OperationUpsert
-	}
-
-	return &TransactionalStateOperation{
-		Request:       request,
-		OperationType: operation,
+		return *toSetRequest(op.GetSet())
 	}
 }
 

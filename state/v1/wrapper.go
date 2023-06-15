@@ -16,6 +16,7 @@ package state
 import (
 	"context"
 	"encoding/json"
+
 	contribMetadata "github.com/dapr/components-contrib/metadata"
 	contribState "github.com/dapr/components-contrib/state"
 	contribQuery "github.com/dapr/components-contrib/state/query"

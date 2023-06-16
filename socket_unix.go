@@ -18,6 +18,5 @@ package dapr
 import "syscall"
 
 func init() {
-	//nolint
-	syscall.Umask(000) // allow this process to create files that could be read-write by others processes
+	syscall.Umask(0o00) // allow this process to create files that could be read-write by others processes
 }

@@ -283,3 +283,24 @@ linters:
     - structcheck
     - varcheck
     - deadcode
+issues:
+  exclude-rules:
+    - path: _test\.go|vendor|third_party|examples|Godeps|builtin
+      linters:
+        - golint
+        - stylecheck
+        - gocyclo
+        - gocognit
+        - gosec
+        - gochecknoglobals
+        - gochecknoinits
+        - godox
+        - goimports
+        - gomnd
+        - misspell
+        - testpackage
+        - wsl
+        - lll
+    - path: go/pkg/mod/github.com/dapr/components-contrib
+      linters:
+        - musttag

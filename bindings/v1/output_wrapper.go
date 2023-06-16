@@ -30,7 +30,7 @@ type outputBinding struct {
 }
 
 func (out *outputBinding) Init(ctx context.Context, req *proto.OutputBindingInitRequest) (*proto.OutputBindingInitResponse, error) {
-	return &proto.OutputBindingInitResponse{}, out.getInstance(ctx).Init(contribBindings.Metadata{
+	return &proto.OutputBindingInitResponse{}, out.getInstance(ctx).Init(ctx, contribBindings.Metadata{
 		Base: metadata.Base{
 			Properties: req.Metadata.Properties,
 		},

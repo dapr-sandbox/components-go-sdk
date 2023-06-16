@@ -1,6 +1,6 @@
 module github.com/dapr-sandbox/components-go-sdk/examples/state.memory
 
-go 1.19
+go 1.20
 
 require (
 	github.com/dapr-sandbox/components-go-sdk v0.0.0-00010101000000-000000000000

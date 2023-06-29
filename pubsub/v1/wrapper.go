@@ -85,7 +85,6 @@ func (s *pubsub) Features(ctx context.Context, _ *proto.FeaturesRequest) (*proto
 			return string(f)
 		}),
 	}
-
 	return features, nil
 }
 
@@ -97,6 +96,46 @@ func (s *pubsub) Publish(ctx context.Context, req *proto.PublishRequest) (*proto
 		Metadata:    req.Metadata,
 		ContentType: &req.ContentType,
 	})
+}
+
+func (s *pubsub) BulkPublish(ctx context.Context, req *proto.BulkPublishRequest) (*proto.BulkPublishResponse, error) {
+	bulkPublisherInstance, ok := s.getInstance(ctx).(BulkPublisher)
+	if !ok {
+		return nil, status.Errorf(codes.Unimplemented, "Does not implement the BulkPublisher interface")
+	}
+
+	if !contribPubSub.FeatureBulkPublish.IsPresent(s.getInstance(ctx).Features()) {
+		return nil, status.Errorf(codes.Unimplemented, "BulkPublish method not enabled for this component")
+	}
+
+	entries := make([]contribPubSub.BulkMessageEntry, len(req.Entries))
+	for i, entry := range req.Entries {
+		entries[i] = contribPubSub.BulkMessageEntry{
+			EntryId:     entry.EntryId,
+			Event:       entry.Event,
+			ContentType: entry.ContentType,
+			Metadata:    entry.Metadata,
+		}
+	}
+
+	bulkPublishResponses, _ := bulkPublisherInstance.BulkPublish(ctx, &contribPubSub.BulkPublishRequest{
+		Entries:    entries,
+		PubsubName: req.PubsubName,
+		Topic:      req.Topic,
+		Metadata:   req.Metadata,
+	})
+
+	responses := make([]*proto.BulkPublishResponseFailedEntry, len(bulkPublishResponses.FailedEntries))
+	for i, response := range bulkPublishResponses.FailedEntries {
+		responses[i] = &proto.BulkPublishResponseFailedEntry{
+			EntryId: response.EntryId,
+			Error:   response.Error.Error(),
+		}
+	}
+
+	return &proto.BulkPublishResponse{
+		FailedEntries: responses,
+	}, nil
 }
 
 func (s *pubsub) Ping(context.Context, *proto.PingRequest) (*proto.PingResponse, error) {

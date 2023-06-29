@@ -23,3 +23,7 @@ type PubSub interface {
 	// uses contrib state store as base.
 	contribPubSub.PubSub
 }
+
+type BulkPublisher interface {
+	contribPubSub.BulkPublisher
+}

@@ -4,8 +4,8 @@ github.com/cloudevents/sdk-go/v2 v2.13.0 h1:2zxDS8RyY1/wVPULGGbdgniGXSzLaRJVl136
 github.com/cloudevents/sdk-go/v2 v2.13.0/go.mod h1:xDmKfzNjM8gBvjaF8ijFjM1VYOVUEeUfapHMUX1T5To=
 github.com/dapr/components-contrib v1.11.3-0.20230626160848-de01000c9bf3 h1:XXgANtgvlLSzuGBcwiFe32lrvnjsCAiBEJJuXWgap3E=
 github.com/dapr/components-contrib v1.11.3-0.20230626160848-de01000c9bf3/go.mod h1:UwM4A+1HZMeHLGU/EPcQYvT7RJIuSWYruoNiK/3T+mc=
-github.com/dapr/dapr v1.11.0-rc.10.0.20230628011725-e2f7b580ab15 h1:e+fFipyi9XMBcWBOA30LurH89G2vYUkKy6rn5KSE7ls=
-github.com/dapr/dapr v1.11.0-rc.10.0.20230628011725-e2f7b580ab15/go.mod h1:73vwvD4sjr+pE6Urxg3bZEb5URTr5yrvBFdK+LEbn+o=
+github.com/dapr/dapr v1.11.0-rc.10.0.20230627234936-6a8ff83285b8 h1:NNj9iGmrfL9QTEllC6fHXyHRqMuTnRww0UnkJEsSABI=
+github.com/dapr/dapr v1.11.0-rc.10.0.20230627234936-6a8ff83285b8/go.mod h1:73vwvD4sjr+pE6Urxg3bZEb5URTr5yrvBFdK+LEbn+o=
 github.com/dapr/kit v0.11.3-0.20230615225244-804821bb8f2d h1:bICHJ3JgkFVxN1W90k2KFfOO32dun13PQsvMqVol8Uw=
 github.com/dapr/kit v0.11.3-0.20230615225244-804821bb8f2d/go.mod h1:hQA6xOhcLAiccXTj7e3/bzpHwvAJCSCp70p2xg3jB40=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

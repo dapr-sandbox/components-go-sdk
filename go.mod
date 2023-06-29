@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/dapr/components-contrib v1.11.3-0.20230626160848-de01000c9bf3
-	github.com/dapr/dapr v1.11.0-rc.10.0.20230628011725-e2f7b580ab15
+	github.com/dapr/dapr v1.11.0-rc.10.0.20230627234936-6a8ff83285b8
 	github.com/dapr/kit v0.11.3-0.20230615225244-804821bb8f2d
 	github.com/google/uuid v1.3.0
 	github.com/pkg/errors v0.9.1

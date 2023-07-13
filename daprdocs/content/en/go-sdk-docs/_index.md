@@ -6,6 +6,11 @@ weight: 1000
 description: How to get up and running with the Dapr pluggable components Go SDK
 no_list: true
 is_preview: true
+cascade:
+  github_repo: https://github.com/dapr-sandbox/components-go-sdk
+  github_subdir: daprdocs/content/en/go-sdk-docs
+  path_base_for_github_subdir: content/en/developing-applications/develop-components/pluggable-components/pluggable-components-sdks/pluggable-components-go/
+  github_branch: main
 ---
 
 Dapr offers packages to help with the development of Go pluggable components.

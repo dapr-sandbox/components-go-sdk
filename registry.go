@@ -18,10 +18,10 @@ import (
 
 	"github.com/dapr-sandbox/components-go-sdk/bindings/v1"
 	"github.com/dapr-sandbox/components-go-sdk/pubsub/v1"
+	"github.com/dapr-sandbox/components-go-sdk/secretstores/v1"
 	"github.com/dapr-sandbox/components-go-sdk/state/v1"
-	"google.golang.org/grpc"
-
 	"github.com/dapr/kit/logger"
+	"google.golang.org/grpc"
 )
 
 var (
@@ -51,6 +51,15 @@ func WithStateStore(factory func() state.Store) option {
 	return func(cf *componentsOpts) {
 		cf.useGrpcServer = append(cf.useGrpcServer, func(s *grpc.Server) {
 			state.Register(s, mux(factory))
+		})
+	}
+}
+
+// WithSecretStore adds secretstore factory for the component.
+func WithSecretStore(factory func() secretstores.SecretStore) option {
+	return func(cf *componentsOpts) {
+		cf.useGrpcServer = append(cf.useGrpcServer, func(s *grpc.Server) {
+			secretstores.Register(s, mux(factory))
 		})
 	}
 }

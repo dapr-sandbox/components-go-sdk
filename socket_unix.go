@@ -15,7 +15,9 @@ limitations under the License.
 
 package dapr
 
-import "syscall"
+import (
+	"syscall"
+)
 
 func init() {
 	syscall.Umask(0o00) // allow this process to create files that could be read-write by others processes

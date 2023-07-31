@@ -19,3 +19,4 @@ spec:
   type: state.memory-pluggable
   version: v1
   initTimeout: 10s
+  metadata: []

@@ -14,8 +14,8 @@
 apiVersion: dapr.io/v1alpha1
 kind: Component
 metadata:
-  name: default
+  name: default-mem
 spec:
   type: state.memory-pluggable
   version: v1
-  initTimeout: 10s
+  initTimeout: 30s

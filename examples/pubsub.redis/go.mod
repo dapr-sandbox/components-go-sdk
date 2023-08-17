@@ -6,15 +6,15 @@ replace github.com/dapr-sandbox/components-go-sdk => ../../.
 
 require (
 	github.com/dapr-sandbox/components-go-sdk v0.0.0-00010101000000-000000000000
-	github.com/dapr/components-contrib v1.11.3-0.20230721142610-9957d6969dda
-	github.com/dapr/kit v0.11.3
+	github.com/dapr/components-contrib v1.11.3-0.20230814210647-01646b8833e1
+	github.com/dapr/kit v0.11.4-0.20230807225040-b6b141aa3e32
 )
 
 require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/cloudevents/sdk-go/binding/format/protobuf/v2 v2.14.0 // indirect
 	github.com/cloudevents/sdk-go/v2 v2.14.0 // indirect
-	github.com/dapr/dapr v1.11.0-rc.10.0.20230627234936-6a8ff83285b8 // indirect
+	github.com/dapr/dapr v1.11.3-0.20230816233012-12830d24dabd // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/go-redis/redis/v8 v8.11.5 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
@@ -27,10 +27,10 @@ require (
 	github.com/redis/go-redis/v9 v9.0.5 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/spf13/cast v1.5.1 // indirect
-	golang.org/x/exp v0.0.0-20230711153332-06a737ee72cb // indirect
+	golang.org/x/exp v0.0.0-20230801115018-d63ba01acd4b // indirect
 	golang.org/x/mod v0.12.0 // indirect
-	golang.org/x/net v0.12.0 // indirect
-	golang.org/x/sys v0.10.0 // indirect
+	golang.org/x/net v0.13.0 // indirect
+	golang.org/x/sys v0.11.0 // indirect
 	golang.org/x/text v0.11.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230711160842-782d3b101e98 // indirect
 	google.golang.org/grpc v1.56.2 // indirect

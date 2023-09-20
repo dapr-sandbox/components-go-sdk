@@ -59,7 +59,7 @@ func makeAbortChan(done chan struct{}) chan struct{} {
 	return abortChan
 }
 
-func runComponent(socket string, opts *componentsOpts, abortChan chan struct{}, onFinish *sync.WaitGroup) error {
+func runComponent(socket string, opts *componentsOpts, abortChan chan struct{}) error {
 	// remove socket if it is already created.
 	if err := os.Remove(socket); err != nil && !os.IsNotExist(err) {
 		return err
@@ -80,7 +80,6 @@ func runComponent(socket string, opts *componentsOpts, abortChan chan struct{}, 
 		return err
 	}
 	go func() {
-		defer onFinish.Done()
 		<-abortChan
 		lis.Close()
 	}()
@@ -109,11 +108,12 @@ func Run() error {
 		socket := filepath.Join(socketFolder, component+".sock")
 		cleanupGroup.Add(1)
 		go func(opts *componentsOpts) {
-			err := runComponent(socket, opts, abort, &cleanupGroup)
+			err := runComponent(socket, opts, abort)
 			if err != nil {
 				svcLogger.Errorf("aborting due to an error %v", err)
 				done <- struct{}{}
 			}
+			cleanupGroup.Done()
 		}(factories[component])
 	}
 

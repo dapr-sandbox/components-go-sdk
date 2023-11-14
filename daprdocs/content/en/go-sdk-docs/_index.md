@@ -18,7 +18,7 @@ Dapr offers packages to help with the development of Go pluggable components.
 ## Prerequisites
 
 - [Go 1.20](https://go.dev/dl/) or later
-- [Dapr 1.9 CLI]({{< ref install-dapr-cli.md >}}) or later
+- [Dapr 1.12 CLI]({{< ref install-dapr-cli.md >}}) or later
 - Initialized [Dapr environment]({{< ref install-dapr-selfhost.md >}})
 - Linux, Mac, or Windows (with WSL)
 

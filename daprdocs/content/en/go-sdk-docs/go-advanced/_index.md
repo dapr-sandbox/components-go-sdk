@@ -71,6 +71,6 @@ spec:
 
 ## Next steps
 - Learn more about implementing:
-  - [Bindings]({{< ref go-bindings >}})
-  - [State]({{< ref go-state-store >}})
-  - [Pub/sub]({{< ref go-pub-sub >}})
+  - [Bindings]({{% ref go-bindings %}})
+  - [State]({{% ref go-state-store %}})
+  - [Pub/sub]({{% ref go-pub-sub %}})

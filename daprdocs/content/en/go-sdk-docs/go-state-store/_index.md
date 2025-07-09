@@ -93,7 +93,7 @@ func main() {
 
 ## Bulk state stores
 
-While state stores are required to support the [bulk operations]({{< ref "state-management-overview.md#bulk-read-operations" >}}), their implementations sequentially delegate to the individual operation methods.
+While state stores are required to support the [bulk operations]({{% ref "state-management-overview.md#bulk-read-operations" %}}), their implementations sequentially delegate to the individual operation methods.
 
 ## Transactional state stores
 
@@ -141,7 +141,7 @@ The Dapr runtime has additional handling of certain error conditions resulting f
 | `NewBulkDeleteRowMismatchError(...)` | Bulk Delete | When the number of affected rows does not match the expected rows |
 
 ## Next steps
-- [Advanced techniques with the pluggable components Go SDK]({{< ref go-advanced >}})
+- [Advanced techniques with the pluggable components Go SDK]({{% ref go-advanced %}})
 - Learn more about implementing:
-  - [Bindings]({{< ref go-bindings >}})
-  - [Pub/sub]({{< ref go-pub-sub >}})
+  - [Bindings]({{% ref go-bindings %}})
+  - [Pub/sub]({{% ref go-pub-sub %}})

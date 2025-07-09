@@ -18,8 +18,8 @@ Dapr offers packages to help with the development of Go pluggable components.
 ## Prerequisites
 
 - [Go 1.20](https://go.dev/dl/) or later
-- [Dapr 1.9 CLI]({{< ref install-dapr-cli.md >}}) or later
-- Initialized [Dapr environment]({{< ref install-dapr-selfhost.md >}})
+- [Dapr 1.9 CLI]({{% ref install-dapr-cli.md %}}) or later
+- Initialized [Dapr environment]({{% ref install-dapr-selfhost.md %}})
 - Linux, Mac, or Windows (with WSL)
 
 {{% alert title="Note" color="primary" %}}
@@ -64,12 +64,12 @@ This creates an application with no components. You will need to implement and r
 
 ## Implement and register components
 
- - [Implementing an input/output binding component]({{< ref go-bindings >}})
- - [Implementing a pub/sub component]({{< ref go-pub-sub >}})
- - [Implementing a state store component]({{< ref go-state-store >}})
+ - [Implementing an input/output binding component]({{% ref go-bindings %}})
+ - [Implementing a pub/sub component]({{% ref go-pub-sub %}})
+ - [Implementing a state store component]({{% ref go-state-store %}})
 
 {{% alert title="Note" color="primary" %}}
-Only a single component of each type can be registered with an individual service. However, [multiple components of the same type can be spread across multiple services]({{< ref go-advanced >}}).
+Only a single component of each type can be registered with an individual service. However, [multiple components of the same type can be spread across multiple services]({{% ref go-advanced %}}).
 {{% /alert %}}
 
 ## Test components locally
@@ -167,8 +167,8 @@ Paths for `COPY` operations in the `Dockerfile` are relative to the Docker conte
 {{% /alert %}}
 
 ## Next steps
-- [Advanced techniques with the pluggable components Go SDK]({{< ref go-advanced >}})
+- [Advanced techniques with the pluggable components Go SDK]({{% ref go-advanced %}})
 - Learn more about implementing:
-  - [Bindings]({{< ref go-bindings >}})
-  - [State]({{< ref go-state-store >}})
-  - [Pub/sub]({{< ref go-pub-sub >}})
+  - [Bindings]({{% ref go-bindings %}})
+  - [State]({{% ref go-state-store %}})
+  - [Pub/sub]({{% ref go-pub-sub %}})

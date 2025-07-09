@@ -107,7 +107,7 @@ func main() {
 ```
 
 ## Next steps
-- [Advanced techniques with the pluggable components Go SDK]({{< ref go-advanced >}})
+- [Advanced techniques with the pluggable components Go SDK]({{% ref go-advanced %}})
 - Learn more about implementing:
-  - [Bindings]({{< ref go-bindings >}})
-  - [State]({{< ref go-state-store >}})
+  - [Bindings]({{% ref go-bindings %}})
+  - [State]({{% ref go-state-store %}})

@@ -125,7 +125,7 @@ func main() {
 ```
 
 ## Next steps
-- [Advanced techniques with the pluggable components Go SDK]({{< ref go-advanced >}})
+- [Advanced techniques with the pluggable components Go SDK]({{% ref go-advanced %}})
 - Learn more about implementing:
-  - [State]({{< ref go-state-store >}})
-  - [Pub/sub]({{< ref go-pub-sub >}})
+  - [State]({{% ref go-state-store %}})
+  - [Pub/sub]({{% ref go-pub-sub %}})

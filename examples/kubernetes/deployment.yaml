@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: __COMPONENT__
+  labels:
+    app: __COMPONENT__
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: __COMPONENT__
+  template:
+    metadata:
+      labels:
+        app: __COMPONENT__
+      annotations:
+        dapr.io/unix-domain-socket-path: "/tmp/dapr-components-sockets" ## required, the default path where Dapr uses for registering components.
+        dapr.io/app-id: "__COMPONENT__"
+        dapr.io/enabled: "true"
+    spec:
+      volumes: ## required, the sockets volume
+        - name: dapr-unix-domain-socket
+          emptyDir: {}
+      containers:
+        - name: component
+          image: localhost:5001/__COMPONENT__:latest
+          imagePullPolicy: Always
+          volumeMounts: # required, the sockets volume mount
+            - name: dapr-unix-domain-socket
+              mountPath: /tmp/dapr-components-sockets
+          env:
+            - name: DAPR_COMPONENT_SOCKET_PATH # Tells the component where the sockets should be created.
+              value: /tmp/dapr-components-sockets/pluggable.sock

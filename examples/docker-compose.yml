@@ -27,7 +27,7 @@ services:
   daprd:
     container_name: daprd-pluggable-component
     restart: on-failure
-    image: "ghcr.io/dapr/daprd:1.9.0-linux-amd64"
+    image: "ghcr.io/dapr/daprd:1.11.2-linux-amd64"
     command: "./daprd --log-level=debug --app-id pluggable-test --components-path=/components"
     environment:
       - DAPR_COMPONENTS_SOCKETS_FOLDER=/var/run

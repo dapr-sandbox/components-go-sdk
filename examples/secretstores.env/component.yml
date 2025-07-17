@@ -14,16 +14,8 @@
 apiVersion: dapr.io/v1alpha1
 kind: Component
 metadata:
-  name: default-redis
+  name: default-env
 spec:
-  type: state.redis-pluggable
+  type: secretstores.local.env-pluggable
   version: v1
-  metadata:
-    - name: redisHost
-      value: redis:6379
-    - name: redisPassword
-      value: ""
-    - name: initTimeout
-      value: 5m
-    - name: timeout
-      value: 100s
+  initTimeout: 30m
